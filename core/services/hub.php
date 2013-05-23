@@ -2,7 +2,7 @@
 
 	final class Hub {
 
-		const HUB_URI                  = 'https://servicesdev.gcx.org/ekko/';
+		const HUB_URI                  = 'https://services.gcx.org/ekko/';
 		const ENDPOINT_SERVICE         = '%(hub)sauth/service';
 		const ENDPOINT_LOGIN           = '%(hub)sauth/login';
 		const ENDPOINT_CREATE_COURSE   = '%(hub)s%(session)s/courses';
