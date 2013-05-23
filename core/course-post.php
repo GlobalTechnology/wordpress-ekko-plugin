@@ -1,0 +1,218 @@
+<?php namespace Ekko\Core {
+
+	/**
+	 * Ekko Course composite post class
+	 * @author Brian Zoetewey <brian.zoetewey@ccci.org>
+	 *
+	 * @property array $lessons
+	 * @property string $course_ID
+	 * @property bool $show_metadata
+	 * @property string $description
+	 * @property string $copyright
+	 * @property string $author_name
+	 * @property string $author_email
+	 * @property string $author_url
+	 * @property array $resources
+	 */
+	final class CoursePost extends \GTO\Framework\Posts\Post {
+
+		const LESSONS      = 'ekko-lessons';
+		const COURSE_ID    = 'ekko-course-id';
+		const AUTHOR_NAME  = 'ekko-author-name';
+		const AUTHOR_EMAIL = 'ekko-author-email';
+		const AUTHOR_URL   = 'ekko-author-url';
+		const DESCRIPTION  = 'ekko-description';
+		const COPYRIGHT    = 'ekko-copyright';
+		const METADATA     = 'ekko-toggle-metadata';
+		const RESOURCES    = 'ekko-resources';
+
+		public function __get( $key ) {
+			switch( $key ) {
+				case 'lessons':
+					$lessons = get_post_meta( $this->ID, self::LESSONS, true );
+					if( !$lessons || $lessons == '' )
+						$lessons = array();
+					return $lessons;
+				case 'course_ID':
+					$course_id = get_post_meta( $this->ID, self::COURSE_ID, true );
+					if( $course_id && is_numeric( $course_id ) )
+						return "{$course_id}";
+					return false;
+				case 'description':
+					return get_post_meta( $this->ID, self::DESCRIPTION, true );
+				case 'copyright':
+					return get_post_meta( $this->ID, self::COPYRIGHT, true );
+				case 'author_name':
+					$value = get_post_meta( $this->ID, self::AUTHOR_NAME, true );
+					if( $value )
+						return $value;
+					$user = new \WP_User( $this->post_author );
+					return $user->display_name;
+				case 'author_email':
+					$value = get_post_meta( $this->ID, self::AUTHOR_EMAIL, true );
+					if( $value )
+						return $value;
+					$user = new \WP_User( $this->post_author );
+					return $user->user_email;
+				case 'author_url':
+					$value = get_post_meta( $this->ID, self::AUTHOR_URL, true );
+					if( $value )
+						return $value;
+					$user = new \WP_User( $this->post_author );
+					return $user->user_url;
+				case 'show_metadata':
+					return !get_post_meta( $this->ID, self::METADATA, true );
+				case 'resources':
+					$resources = get_post_meta( $this->ID, self::RESOURCES, true );
+					if( !$resources || !is_array( $resources ) )
+						return array();
+					return $resources;
+				default:
+					return parent::__get( $key );
+			}
+		}
+
+		public function __set( $key, $value ) {
+			switch( $key ) {
+				case 'lessons':
+					update_post_meta( $this->ID, self::LESSONS, $value );
+					break;
+				case 'course_ID':
+					update_post_meta( $this->ID, self::COURSE_ID, $value );
+					break;
+				case 'description':
+					update_post_meta( $this->ID, self::DESCRIPTION, $value );
+					break;
+				case 'copyright':
+					update_post_meta( $this->ID, self::COPYRIGHT, $value );
+					break;
+				case 'author_name':
+					update_post_meta( $this->ID, self::AUTHOR_NAME, $value );
+					break;
+				case 'author_email':
+					update_post_meta( $this->ID, self::AUTHOR_EMAIL, $value );
+					break;
+				case 'author_url':
+					update_post_meta( $this->ID, self::AUTHOR_URL, $value );
+					break;
+				case 'show_metadata':
+					update_post_meta( $this->ID, self::METADATA, $value );
+					break;
+				case 'resources':
+					update_post_meta( $this->ID, self::RESOURCES, $value );
+					break;
+				default:
+					parent::__set( $key, $value );
+			}
+		}
+
+		public function get_manifest() {
+			$dom = new \DOMDocument( '1.0', 'UTF-8' );
+			$dom->formatOutput = true;
+			$map = array();
+
+			$course = $dom->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:course' ) );
+			$course->setAttribute( 'schemaVersion', '1' );
+			if( $this->course_ID )
+				$course->setAttribute( 'id', $this->course_ID );
+
+			$meta = $course->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:meta' ) );
+			//Title
+			$meta->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:title', $this->post_title ) );
+			//Author
+			$author = $meta->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:author' ) );
+			$author->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:name', $this->author_name ) );
+			$author->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:email', $this->author_email ) );
+			$author->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:url', $this->author_url ) );
+			//Banner
+			if( $banner_id = (int) get_post_thumbnail_id( $this->ID ) ) {
+				if( $banner_id > 0 ) {
+					$banner = $meta->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:banner' ) );
+					$banner->setAttribute( 'resource', $map[ "{$banner_id}" ] = $this->get_resource_id( $banner_id ) );
+				}
+			}
+			//Description
+			$meta->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:description', $this->description ) );
+			//Copyright
+			$meta->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:copyright', $this->copyright ) );
+
+			//Lessons
+			$content = $course->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:content' ) );
+			foreach( $this->lessons as $item ) {
+				if( $item->type == 'quiz' )
+					continue;
+				$lesson = $content->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:lesson' ) );
+				$lesson->setAttribute( 'id', $item->uuid );
+				$lesson->setAttribute( 'title', $item->title );
+
+				foreach( $item->media->assets as $media_item ) {
+					$media = $lesson->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:media' ) );
+					$media->setAttribute( 'id', $media_item->id );
+					$media->setAttribute( 'resource', $map[ "{$media_item->post_id}" ] = $this->get_resource_id( $media_item->post_id ) );
+					if( $media_item->post_id != $media_item->thumbnail_id )
+						$media->setAttribute( 'thumbnail', $map[ "{$media_item->thumbnail_id}" ] = $this->get_resource_id( $media_item->thumbnail_id ) );
+				}
+
+				$text_content = explode( '<div style="page-break-after:always"><span style="display:none">&nbsp;</span></div>', $item->text->content );
+				$i=0;
+				foreach( $text_content as $text_item ) {
+					$text = $lesson->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:text' ) );
+					$text->setAttribute( 'id', "{$item->text->uuid}-{$i}" );
+					$text->appendChild( $dom->createCDATASection( $text_item ) );
+					$i++;
+				}
+			}
+
+			$resources_xml = $course->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:resources' ) );
+			$resources = array();
+			foreach( $map as $media_id => $resource_id ) {
+				$media_id = (int) $media_id;
+
+				$media_post = get_post( $media_id );
+				$media_file = get_attached_file( $media_id );
+				$media_meta = wp_get_attachment_metadata( $media_id );
+				if( is_array( $media_meta ) ) {
+					if( is_array( $media_meta[ 'sizes' ] ) && array_key_exists( 'ekko-image', $media_meta[ 'sizes' ] ) ) {
+						$media_file = dirname( $media_file ) . '/' . $media_meta[ 'sizes' ][ 'ekko-image' ][ 'file' ];
+					}
+				}
+
+				$resources[ $resource_id ] = (object) array(
+					'id'      => $resource_id,
+					'post_id' => $media_id,
+					'type'    => $media_post->post_mime_type,
+					'file'    => $media_file,
+					'size'    => filesize( $media_file ),
+					'sha1'    => sha1_file( $media_file ),
+				);
+
+				$resource_xml = $resources_xml->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:resource' ) );
+				$resource_xml->setAttribute( 'id',   $resource_id );
+				$resource_xml->setAttribute( 'type', 'file' );
+				$resource_xml->setAttribute( 'file', basename( $resources[ $resource_id ]->file ) );
+				$resource_xml->setAttribute( 'size', $resources[ $resource_id ]->size );
+				$resource_xml->setAttribute( 'sha1', $resources[ $resource_id ]->sha1 );
+				$resource_xml->setAttribute( 'mimeType', $resources[ $resource_id ]->type );
+			}
+			$this->resources = $resources;
+
+			return $dom->saveXML();
+		}
+
+		/**
+		 *
+		 * @param int $post_id
+		 * @return string
+		 */
+		private function get_resource_id( $post_id ) {
+			$post_id = (int) $post_id;
+			$resources = $this->resources;
+			foreach( $resources as $resource_id => $resource ) {
+				if( $resource->post_id == $post_id )
+					return $resource_id;
+			}
+			//Resource not found, generate new uuid
+			return \GTO\Framework\Util\UUID::v4();
+		}
+	}
+}
