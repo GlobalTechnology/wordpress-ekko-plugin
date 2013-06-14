@@ -2,7 +2,6 @@
 
 	final class Hub {
 
-		const HUB_URI                  = 'https://services.gcx.org/ekko/';
 		const ENDPOINT_SERVICE         = '%(hub)sauth/service';
 		const ENDPOINT_LOGIN           = '%(hub)sauth/login';
 		const ENDPOINT_CREATE_COURSE   = '%(hub)s%(session)s/courses';
@@ -50,7 +49,7 @@
 		 */
 		public function get_service() {
 			$response = wp_remote_get(
-				$this->vnsprintf( self::ENDPOINT_SERVICE, array( 'hub' => self::HUB_URI ) ),
+				$this->vnsprintf( self::ENDPOINT_SERVICE, array( 'hub' => \Ekko\URI_HUB ) ),
 				array(
 					'redirection' => 0,
 					'headers' => array(
@@ -81,7 +80,7 @@
 			$wpgcx = \WPGCXPlugin::singleton();
 			$ticket = $wpgcx->cas_client()->retrievePT( $this->get_service(), $err_code, $err_msg );
 			$response = wp_remote_post(
-				$this->vnsprintf( self::ENDPOINT_LOGIN, array( 'hub' => self::HUB_URI ) ),
+				$this->vnsprintf( self::ENDPOINT_LOGIN, array( 'hub' => \Ekko\URI_HUB ) ),
 				array( 'body' => array( 'ticket' => $ticket ) )
 			);
 			$session = new HubSession( $response[ 'body' ] );
@@ -102,7 +101,7 @@
 			$logger->debug( __CLASS__ . '::' . __FUNCTION__ );
 			$logger->debug( var_export( $manifest, true ) );
 			$params = array(
-				'hub' => self::HUB_URI,
+				'hub' => \Ekko\URI_HUB,
 				'session' => $this->get_session(),
 			);
 			$response = wp_remote_post(
@@ -135,7 +134,7 @@
 			$logger->debug( __CLASS__ . '::' . __FUNCTION__ );
 			$logger->debug( var_export( $manifest, true ) );
 			$params = array(
-				'hub' => self::HUB_URI,
+				'hub' => \Ekko\URI_HUB,
 				'session' => $this->get_session(),
 				'course' => $course_id,
 			);
@@ -163,7 +162,7 @@
 			global $logger;
 			$logger->debug( __CLASS__ . '::' . __FUNCTION__ );
 			$params = array(
-				'hub' => self::HUB_URI,
+				'hub' => \Ekko\URI_HUB,
 				'session' => $this->get_session(),
 				'course' => $course_id,
 			);
@@ -180,10 +179,10 @@
 				CURLOPT_HTTPHEADER => array( 'Content-Type: ' . $type ),
 			) );
 			$response = curl_exec( $ch );
-			$logger->debug( var_export( $response, true ) );
-			$logger->debug( 'Error Code: ' . curl_errno($ch) );
-			$logger->debug( 'Error: ' . curl_error($ch) );
-			$logger->debug( var_export( curl_getinfo( $ch ), true ) );
+//			$logger->debug( var_export( $response, true ) );
+//			$logger->debug( 'Error Code: ' . curl_errno($ch) );
+//			$logger->debug( 'Error: ' . curl_error($ch) );
+//			$logger->debug( var_export( curl_getinfo( $ch ), true ) );
 			fclose( $file_stream );
 			curl_close( $ch );
 		}
@@ -198,7 +197,7 @@
 			global $logger;
 			$logger->debug( __CLASS__ . '::' . __FUNCTION__ );
 			$params = array(
-				'hub' => self::HUB_URI,
+				'hub' => \Ekko\URI_HUB,
 				'session' => $this->get_session(),
 				'course' => $course_id,
 			);
@@ -211,7 +210,7 @@
 					),
 				)
 			);
-			$logger->debug( var_export( $response, true ) );
+//			$logger->debug( var_export( $response, true ) );
 			$dom = $this->parse_xml_to_domdoc( $response[ 'body' ] );
 			$resources = array();
 			if( $dom ) {
@@ -225,12 +224,14 @@
 		/**
 		 * Mark the current course manifest as published
 		 * @param int $course_id
+		 *
+		 * @return array|boolean
 		 */
 		public function publish_course( $course_id ) {
 			global $logger;
 			$logger->debug( __CLASS__ . '::' . __FUNCTION__ );
 			$params = array(
-				'hub' => self::HUB_URI,
+				'hub' => \Ekko\URI_HUB,
 				'session' => $this->get_session(),
 				'course' => $course_id,
 			);
@@ -244,6 +245,19 @@
 				)
 			);
 			$logger->debug( var_export( $response, true ) );
+			if( $response[ 'response' ][ 'code' ] == 200 )
+				return true;
+			$dom = $this->parse_xml_to_domdoc( $response[ 'body' ] );
+			$errors = array();
+			if( $dom ) {
+				$xpath = $this->xpath_parser( $dom );
+				foreach( $xpath->query( '/hub:errors/hub:error/@message' ) as $error ) {
+					$errors[] = $error;
+				}
+			}
+			if( empty( $errors ) )
+				$errors[] = 'Unknown Error';
+			return $errors;
 		}
 
 		/**
@@ -254,7 +268,7 @@
 		 */
 		private function get_users( $course_id, $endpoint = self::ENDPOINT_ENROLLED ) {
 			$params = array(
-				'hub' => self::HUB_URI,
+				'hub' => \Ekko\URI_HUB,
 				'session' => $this->get_session(),
 				'course' => $course_id,
 			);
@@ -286,7 +300,7 @@
 		 */
 		private function update_users( $course_id, array $add = array(), array $remove = array(), $endpoint = self::ENDPOINT_ENROLLED ) {
 			$params = array(
-				'hub' => self::HUB_URI,
+				'hub' => \Ekko\URI_HUB,
 				'session' => $this->get_session(),
 				'course' => $course_id,
 			);

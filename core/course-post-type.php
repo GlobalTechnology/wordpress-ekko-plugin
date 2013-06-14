@@ -4,8 +4,17 @@
 
 		protected $post_type = 'ekko-course';
 
+		protected $remove_featured_image_metabox = true;
+
 		final protected function get_post( \WP_Post $post ) {
 			return new \Ekko\Core\CoursePost( $post );
+		}
+
+		final public function get_course( $post ) {
+			$post = get_post( $post );
+			if( $post instanceof \WP_Post && get_post_type( $post ) == $this->post_type() )
+				return $this->get_post( $post );
+			return null;
 		}
 
 		protected function post_type_args() {
@@ -36,7 +45,10 @@
 
 		final protected function register_hooks() {
 			add_action( 'post_row_actions', array( &$this, 'post_row_actions' ), 10, 2 );
-			add_action( 'admin_action_ekko-publish', array( &$this, 'publish_to_ekko' ), 10, 0 );
+			add_action( 'admin_menu', array( &$this, 'add_admin_menus' ), 10, 0 );
+			add_action( 'load-ekko-course_page_ekko-publish', array( &$this, 'check_publish' ), 10, 0 );
+			add_action( 'print_media_templates', array( &$this, 'media_templates' ), 10, 0 );
+			add_action( 'dbx_post_sidebar', array( &$this, 'course_templates' ), 10, 0 );
 		}
 
 		final protected function post_type_title() {
@@ -66,7 +78,7 @@
 
 			//Ekko Course Creator
 			wp_register_style(  'ekko-app', \Ekko\PLUGIN_URL . 'css/course.css', array( 'bootstrap', 'bootstrap-switch' ) );
-			wp_register_script( 'ekko-media-library', \Ekko\PLUGIN_URL . '/js/media-frame.js', array( 'media-editor' ) );
+			wp_register_script( 'ekko-media', \Ekko\PLUGIN_URL . '/js/media.js', array( 'media-editor' ) );
 			wp_register_script( 'ekko-app-controllers', \Ekko\PLUGIN_URL . 'js/controllers.js', array( 'angular' ) );
 			wp_register_script( 'ekko-app-services', \Ekko\PLUGIN_URL . 'js/services.js', array( 'angular' ) );
 			wp_register_script( 'ekko-app-directives', \Ekko\PLUGIN_URL . 'js/directives.js', array( 'angular' ) );
@@ -80,15 +92,21 @@
 				'ekko-app-services',
 				'ekko-app-directives',
 			), null, false );
-			wp_localize_script( 'ekko-app', EkkoL10N, array(
+			wp_localize_script( 'ekko-app', '_EkkoAppL10N', array(
 				'api_url' => admin_url( '/admin-ajax.php' ),
+				'l10n' => array(
+					'setBanner'      => __( 'Set banner image', \Ekko\TEXT_DOMAIN ),
+					'setBannerTitle' => __( 'Set Banner Image', \Ekko\TEXT_DOMAIN ),
+					'addMediaTitle'  => __( 'Add Media', \Ekko\TEXT_DOMAIN ),
+					'addMedia'       => __( 'Add media', \Ekko\TEXT_DOMAIN ),
+				)
 			) );
 
 			if( in_array( $hook_suffix, array( 'post.php', 'post-new.php' ) ) ) {
 				wp_enqueue_media();
 				wp_enqueue_style(  'ekko-app' );
 				wp_enqueue_script( 'ekko-app' );
-				wp_enqueue_script( 'ekko-media-library' );
+				wp_enqueue_script( 'ekko-media' );
 			}
 		}
 
@@ -96,46 +114,74 @@
 			return array(
 				\Ekko\Core\Metaboxes\CourseMetaMetabox::singleton(),
 				\Ekko\Core\Metaboxes\CourseCreatorMetabox::singleton(),
+				\Ekko\Core\Metaboxes\BannerMetabox::singleton(),
 				\Ekko\Core\Metaboxes\SaveMetabox::singleton(),
 			);
+		}
+
+		final public function media_templates() {
+			include( \Ekko\PLUGIN_DIR . 'templates/media-template.php' );
+		}
+
+		final public function course_templates() {
+			include( \Ekko\PLUGIN_DIR . 'templates/course-template.php' );
 		}
 
 		final public function post_row_actions( $actions, $post ) {
 			if( get_post_type( $post ) == $this->post_type() ) {
 				if( array_key_exists( 'inline hide-if-no-js', $actions ) )
 					unset( $actions[ 'inline hide-if-no-js' ] );
-				$post_type_object = get_post_type_object( $this->post_type() );
-				$actions['ekko-publish'] = "<a class='ekko-publish' title='Publish to Ekko' href='" . wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=ekko-publish', $post->ID ) ), 'ekko-publish_' . $post->ID ) . "'>" . __( 'Publish to Ekko' ) . "</a>";
+				$actions['ekko-publish'] = "<a class='ekko-publish' title='Publish to Ekko' href='" . wp_nonce_url( admin_url( sprintf( 'edit.php?post=%d&amp;post_type=%s&amp;page=ekko-publish', $post->ID, $this->post_type() ) ), 'ekko-publish_' . $post->ID ) . "'>" . __( 'Publish to Ekko' ) . "</a>";
 			}
 			return $actions;
 		}
 
-		final public function publish_to_ekko() {
-			check_admin_referer( 'ekko-publish_' . $_REQUEST[ 'post' ] );
+		final public function add_admin_menus() {
+			add_submenu_page( 'edit.php?post_type=ekko-course', 'Publish Course to EKKO', null, 'edit_posts', 'ekko-publish', array( &$this, 'publish_to_ekko' ) );
+		}
 
+		final public function check_publish() {
+			if( ! wp_verify_nonce( $_REQUEST[ '_wpnonce' ], 'ekko-publish_' . $_REQUEST[ 'post' ] ) )
+				wp_die( __( 'Cheatin&#8217; uh?', \Ekko\TEXT_DOMAIN ) );
+		}
+
+		final public function publish_to_ekko() {
+			echo '<div class="wrap"><div id="icon-post" class="icon32"><br></div><h2>Publish Course to EKKO</h2></div>';
 			$post = get_post( $_REQUEST[ 'post' ] );
 			$course = $this->get_post( $post );
+			echo sprintf( '<h4>Publishing: %1$s</h4>', $course->post_title );
 
 			$hub = \Ekko\Core\Services\Hub::singleton();
-			global $logger;
-			$logger->debug( 'Session: ' . $hub->get_session() );
 			$course_id = $course->course_ID;
+
 			if( $course_id === false )
 				$course_id = $hub->create_course( $course->get_manifest() );
 			else
 				$hub->update_course( $course_id, $course->get_manifest() );
+			echo sprintf( '<p>Course manifest updated</p>' );
 			$course->course_ID = $course_id;
-			$logger->debug( "Course ID: {$course_id}" );
 
 			$existing_resources = $hub->get_resources( $course_id );
 			$resources = $course->resources;
+			echo '<p>Uploading Media:<ul>';
 			foreach( $resources as $resource_id => $resource ) {
+				echo sprintf( '<li>%1$s</li>', basename( $resource->file ) );
 				if( in_array( $resource->sha1, $existing_resources ) )
 					continue;
 				$hub->upload_resource( $course_id, $resource->file, $resource->type );
 			}
+			echo '</ul></p>';
 
-			$hub->publish_course( $course_id );
+			$result = $hub->publish_course( $course_id );
+			if( $result !== true ) {
+				echo '<p><strong>One or more Errors occured during publish:</strong>';
+				if( is_array( $result ) )
+					foreach( $result as $error )
+						echo '<div>' . esc_html( $error ) . '</div>';
+				echo '</p>';
+			}
+			else
+				echo '<p><strong>Course successfully published!</strong></p>';
 
 			$admins = array();
 			$users = array();
@@ -149,8 +195,7 @@
 			$hub->sync_admins( $course_id, $admins );
 			$hub->sync_enrolled( $course_id, $users );
 
-			wp_redirect( admin_url('edit.php') . '?post_type=' . $this->post_type() );
-			exit();
+			?><a href="<?php echo admin_url( 'edit.php?post_type=ekko-course' ); ?>">Return to Courses page<?php
 		}
 
 	}

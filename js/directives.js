@@ -3,70 +3,65 @@
 angular.module('EkkoApp.directives', [])
 	.directive('ckEditor', [function() {
 		return {
-			require: '?ngModel',
+			require: 'ngModel',
 			link: function(scope, element, attrs, ngModel) {
-				var ck = CKEDITOR.replace(element[0], {
-					customConfig: '',
-					toolbar: [ {
-						items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript' ]
-					}, {
-						items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent' ]
-					}, {
-						items: [ 'Link', 'Unlink' ]
-					}, {
-						items: [ 'Format' ]
-					}, {
-						items: [ 'PageBreak' ]
-					} ]
-				});
-				if(!ngModel)
-					return;
+				var defaults = {
+						customConfig: '',
+						toolbar: [ {
+							items: [ 'Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript' ]
+						}, {
+							items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent' ]
+						}, {
+							items: [ 'Link', 'Unlink' ]
+						}, {
+							items: [ 'Format' ]
+						}, {
+							items: [ 'PageBreak' ]
+						} ]
+					},
+					opts = angular.extend( {}, defaults, scope.$eval( attrs.ckEditor ) ),
+					ck = undefined,
+					createEditor = function() {
+						ck = CKEDITOR.replace( element[ 0 ], opts );
 
-//				ck.on('beforeCommandExec', function(event) {
-//					console.log( event.name );
-//				});
+						ck.on( 'instanceReady', function() {
+							ck.setData( ngModel.$viewValue );
+						});
 
-				ck.on('instanceReady', function() {
-					ck.setData(ngModel.$viewValue);
-				});
+						ck.on( 'pasteState', function() {
+							scope.$apply( function() {
+								ngModel.$setViewValue( ck.getData() );
+							} );
+						});
+					},
+					destroyEditor = function() {
+						if( ck )
+							ck.destroy();
+						ck = undefined;
+					};
 
-				ck.on('pasteState', function() {
-					scope.$apply(function() {
-						ngModel.$setViewValue(ck.getData());
-					});
-				});
+				createEditor();
 
 				ngModel.$render = function(value) {
-					ck.setData(ngModel.$viewValue);
+					if( ck )
+						ck.setData( ngModel.$viewValue );
 				};
 
 				element.bind('$destroy', function() {
-					ck.destroy();
+					destroyEditor();
 				});
-/*
-				jQuery(window).on( 'sortstart sortchange sortstop sortupdate', function(event, ui) {
-					if( ui.item.has( element ).length ) {
-						console.log( event.type + ' - ' + scope.asset.id );
-					}
+
+				scope.$on( 'sortStart', function( e ) {
+					destroyEditor();
 				} );
 
-				jQuery(window).on( 'sortstart', function(event, ui) {
-					if( jQuery.contains( ui.item.get(0), element.get(0) ) ) {
-						ck.destroy();
-						ck = undefined;
-					}
+				scope.$on( 'sortStop', function( e ) {
+					createEditor();
 				} );
-
-				jQuery(window).on( 'sortstop', function(event, ui) {
-					if( ck == undefined )
-						ck = CKEDITOR.replace(element[0], {});
-				} );
-*/
-
 			}
 		};
 	}])
-	.directive('uiSwitch', [function() {
+	.directive( 'uiSwitch', [ function() {
 		return {
 			restrict: 'A',
 			replace: true,
@@ -97,4 +92,7 @@ angular.module('EkkoApp.directives', [])
 				});
 			}
 		};
+	} ] )
+	.directive( 'testing', [ function() {
+
 	} ] );

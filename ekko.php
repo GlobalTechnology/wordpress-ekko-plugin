@@ -10,7 +10,6 @@
  * Domain Path: /languages/
  * License:     Modified BSD
  */
-
 /*
  * Copyright (c) 2013, Campus Crusade for Christ, Intl.
  * All rights reserved.

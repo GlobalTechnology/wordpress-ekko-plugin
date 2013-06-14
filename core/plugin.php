@@ -44,7 +44,7 @@
 
 		public function add_ekko_image_sizes() {
 			add_image_size( 'ekko-thumbnail', 150, 84, true );
-			add_image_size( 'ekko-banner', 1280, 720, true );
+			add_image_size( 'ekko-banner-thumbnail', 240, 135, true );
 			add_image_size( 'ekko-image', 1280, 720, true );
 		}
 

@@ -376,8 +376,12 @@ pink   c3325f d3557d 9a284c c3325f f7dfe6
 	color: rgba(255, 255, 255, 0.75);
 }
 
-.ekko-bootstrap .ekko-lesson .brand,
-.ekko-bootstrap .ekko-quiz .brand
+.ekko-bootstrap .ekko-item-blue .brand,
+.ekko-bootstrap .ekko-item-purple .brand,
+.ekko-bootstrap .ekko-item-green .brand,
+.ekko-bootstrap .ekko-item-yellow .brand,
+.ekko-bootstrap .ekko-item-pink .brand,
+.ekko-bootstrap .ekko-item-orange .brand
 {
   color: #ffffff;
   text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
@@ -465,4 +469,36 @@ pink   c3325f d3557d 9a284c c3325f f7dfe6
 {
 	border-top-right-radius: 5px;
 	border-bottom-right-radius: 5px;
+}
+
+#coursebannerdiv .well
+{
+	min-height: 135px;
+}
+
+#side-sortables.empty-container
+{
+	border: 0px solid transparent;
+}
+
+.ekko-bootstrap .lesson-placeholder
+{
+	margin-bottom: 20px;
+	height: 40px;
+	background-color: #EEE;
+	border-radius: 5px;
+	border: 1px dashed #333;
+}
+
+.oembed-none,
+.oembed-video
+{
+	position: absolute;
+	background: #f5f5f5;
+	top: 57px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 16px 16px 32px;
+	overflow: auto;
 }

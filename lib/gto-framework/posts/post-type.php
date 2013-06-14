@@ -26,6 +26,13 @@
 		 */
 		protected $remove_publish_metabox = true;
 
+		/**
+		 * Remove the Featured Image metabox (postimagediv)
+		 *
+		 * @var bool
+		 */
+		protected $remove_featured_image_metabox = false;
+
 		/****************************
 		 * Internal Methods
 		****************************/
@@ -112,7 +119,11 @@
 		final public function _register_metaboxes( \WP_Post $post ) {
 			//Remove the default Publish metabox (submitdiv)
 			if( $this->remove_publish_metabox )
-				remove_meta_box( 'submitdiv', null, 'side');
+				remove_meta_box( 'submitdiv', null, 'side' );
+
+			//Remove the featured image metabox
+			if( $this->remove_featured_image_metabox )
+				remove_meta_box( 'postimagediv', null, 'side' );
 
 			//Register custom metaboxes
 			foreach( $this->metaboxes() as $metabox ) {

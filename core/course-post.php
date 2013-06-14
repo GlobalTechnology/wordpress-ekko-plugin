@@ -139,27 +139,58 @@
 			//Lessons
 			$content = $course->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:content' ) );
 			foreach( $this->lessons as $item ) {
-				if( $item->type == 'quiz' )
-					continue;
-				$lesson = $content->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:lesson' ) );
-				$lesson->setAttribute( 'id', $item->uuid );
-				$lesson->setAttribute( 'title', $item->title );
 
-				foreach( $item->media->assets as $media_item ) {
-					$media = $lesson->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:media' ) );
-					$media->setAttribute( 'id', $media_item->id );
-					$media->setAttribute( 'resource', $map[ "{$media_item->post_id}" ] = $this->get_resource_id( $media_item->post_id ) );
-					if( $media_item->post_id != $media_item->thumbnail_id )
-						$media->setAttribute( 'thumbnail', $map[ "{$media_item->thumbnail_id}" ] = $this->get_resource_id( $media_item->thumbnail_id ) );
-				}
+				switch( $item->type ) {
+					case "lesson":
+						$lesson = $content->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:lesson' ) );
+						$lesson->setAttribute( 'id', $item->id );
+						$lesson->setAttribute( 'title', $item->title );
 
-				$text_content = explode( '<div style="page-break-after:always"><span style="display:none">&nbsp;</span></div>', $item->text->content );
-				$i=0;
-				foreach( $text_content as $text_item ) {
-					$text = $lesson->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:text' ) );
-					$text->setAttribute( 'id', "{$item->text->uuid}-{$i}" );
-					$text->appendChild( $dom->createCDATASection( $text_item ) );
-					$i++;
+						foreach( $item->media->assets as $media_item ) {
+							$media = $lesson->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:media' ) );
+							$media->setAttribute( 'id', $media_item->id );
+							$media->setAttribute( 'type', $media_item->type );
+							$media->setAttribute( 'resource', $map[ "{$media_item->post_id}" ] = $this->get_resource_id( $media_item->post_id ) );
+							if( $media_item->post_id != $media_item->thumbnail_id )
+								$media->setAttribute( 'thumbnail', $map[ "{$media_item->thumbnail_id}" ] = $this->get_resource_id( $media_item->thumbnail_id ) );
+						}
+
+						$text_content = explode( '<div style="page-break-after:always"><span style="display:none">&nbsp;</span></div>', $item->text->content );
+						$i=0;
+						foreach( $text_content as $text_item ) {
+							$text = $lesson->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:text' ) );
+							$text->setAttribute( 'id', "{$item->text->id}-{$i}" );
+							$text->appendChild( $dom->createCDATASection( $text_item ) );
+							$i++;
+						}
+						break;
+					case "quiz":
+						$quiz = $content->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:quiz' ) );
+						$quiz->setAttribute( 'id', $item->id );
+
+						foreach( $item->questions as $question_item ) {
+							$question = $quiz->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:question' ) );
+							$question->setAttribute( 'id', $question_item->id );
+							$question->setAttribute( 'type', $question_item->type );
+
+							switch( $question_item->type ) {
+								case "multiple":
+									$text = $question->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:text' ) );
+									$text->appendChild( $dom->createCDATASection( $question_item->question ) );
+
+									$options = $question->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:options' ) );
+									foreach( $question_item->options as $option_item ) {
+										$option = $options->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:option', $option_item->text ) );
+										$option->setAttribute( 'id', $option_item->id );
+										if( $option_item->answer === true )
+											$option->setAttribute( 'answer', 'answer' );
+									}
+
+									break;
+							}
+						}
+
+						break;
 				}
 			}
 
