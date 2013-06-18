@@ -41,13 +41,35 @@ angular.module( 'EkkoApp.controllers', [] )
 		//Callback for adding Media to lessons
 		$scope.addMediaCallback = function( selection ) {
 			var state = $scope._editor.state();
-			selection = selection || state.get('selection');
+			selection = selection || state.get( 'selection' );
 			if ( ! selection )
 				return;
 
 			var media = selection.single();
+			var item = $scope.$ekko.media( media.attributes.type );
+			item.resource = $scope.$ekko.media_file( media.attributes.id );
+
 			$scope.$apply( function() {
-				$scope.item.media.assets.push( $scope.$ekko.media( media.attributes.type, media.attributes.id ) );
+				$scope.item.media.assets.push( item );
+			} );
+		};
+
+		$scope.addOEmbedCallback = function( data, provider ) {
+			var type;
+			if( data.type == "video" )
+				type = "video";
+			else if( data.type == "photo" )
+				type = "image";
+			else
+				return;
+
+			var item = $scope.$ekko.media( type );
+			item.resource = $scope.$ekko.media_uri( data.url, provider );
+			if( type == "video" && data.thumbnail_url )
+				item.thumbnail = $scope.$ekko.media_uri( data.thumbnail_url );
+
+			$scope.$apply( function() {
+				$scope.item.media.assets.push( item );
 			} );
 		};
 
@@ -58,6 +80,7 @@ angular.module( 'EkkoApp.controllers', [] )
 			else {
 				$scope._editor = ekko.media.editor.open( $scope.item.id, {} );
 				$scope._editor.on( 'insert', $scope.addMediaCallback );
+				$scope._editor.on( 'embed', $scope.addOEmbedCallback );
 			}
 		};
 
@@ -67,32 +90,38 @@ angular.module( 'EkkoApp.controllers', [] )
 		} );
 	}])
 	.controller( 'MediaAssetItemController', [ '$scope', function( $scope ) {
-		$scope.thumbnail_url = _EkkoAppL10N.api_url + '?action=ekko-thumbnail&id=';
+		$scope.thumbnail_url = null;
 
-		$scope.addMediaThumbnailCallback = function( selection ) {
+		$scope.updateThumbnailUrl = function() {
+			if( _.indexOf( [ 'video', 'audio' ], $scope.media.type ) > -1 ) {
+				if( $scope.media.thumbnail )
+					$scope.thumbnail_url = ( $scope.media.thumbnail.type == "uri" ) ? $scope.media.thumbnail.uri : _EkkoAppL10N.api_url + '?action=ekko-thumbnail&id=' + $scope.media.thumbnail.post_id;
+			}
+			else
+				$scope.thumbnail_url = ( $scope.media.resource.type == "uri" ) ? $scope.media.resource.uri : _EkkoAppL10N.api_url + '?action=ekko-thumbnail&id=' + $scope.media.resource.post_id;
+		};
+		$scope.updateThumbnailUrl();
 
+		$scope.addMediaThumbnailCallback = function() {
+			var state = $scope._thumbnail.state(),
+				selection = state.get( 'selection' ).single();
+
+			$scope.$apply( function() {
+				$scope.media.thumbnail = $scope.$ekko.media_file( selection.attributes.id );
+				$scope.updateThumbnailUrl();
+			} );
 		};
 
 		$scope.addMediaThumbnail = function() {
 			if( $scope._thumbnail )
 				$scope._thumbnail.open();
 			else {
-				$scope._thumbnail = ekko.media.editor.open( $scope.media.id, { library: { type: 'image' } } );
+				$scope._thumbnail = ekko.media.thumbnail.open( $scope.media.id, {} );
+				$scope._thumbnail.on( 'select', $scope.addMediaThumbnailCallback );
 			}
 		};
-/*
-		$scope.addMediaThumbnail = function() {
-			$scope._frame = wp.media.frames.ekkoLibrary.media_frame( $scope.media.id );
-			$scope._frame.off('select').on( 'select', $scope.mediaFrameCallback );
-			$scope._frame.open();
-		};
-		$scope.removeMedia = function() {
-			$scope.item.media.assets.splice( $scope.$index, 1 );
-		};
-		$scope.mediaFrameCallback = function() {
-			var item = $scope._frame.state().get('selection').first();
-			$scope.media.thumbnail_id = item.attributes.id;
-			$scope.$parent.$digest();
-		};
-*/
-	}]);
+
+		$scope.$on( '$destroy', function() {
+			ekko.media.thumbnail.remove( $scope.media.id );
+		} );
+	} ] );

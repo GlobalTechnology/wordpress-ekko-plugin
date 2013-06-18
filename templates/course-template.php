@@ -59,6 +59,13 @@
 
 					<div class="brand">Quiz</div>
 
+					<div class="navbar-form pull-left">
+						<div class="input-append">
+							<input type="text" placeholder="Title" class="span4" ng-model="item.title" />
+							<span class="add-on">{{40 - item.title.length}}</span>
+						</div>
+					</div>
+
 					<div class="navbar-form pull-right">
 						<div class="btn-group">
 							<a class="btn btn-pimp dropdown-toggle" data-toggle="dropdown" href><i class="icon-cog icon-white"></i> <span class="caret"></span></a>
@@ -126,7 +133,7 @@
 				<i class="icon-headphones"></i> Audio
 			</span>
 		</p>
-		<img ng-src="{{thumbnail_url}}{{media.thumbnail_id}}" style="width:150px; height:84px;" />
+		<img ng-src="{{thumbnail_url}}" style="width:150px; height:84px;" />
 		<div class="row-fluid">
 			<a ui-if="!(media.type=='image')" href class="btn btn-mini btn-info pull-left" ng-click="addMediaThumbnail()">thumbnail</a>
 			<a href class="btn btn-mini btn-danger pull-right" ng-click="$parent.item.media.assets.splice( $index, 1 )">remove</a>

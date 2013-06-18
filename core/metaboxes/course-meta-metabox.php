@@ -24,22 +24,13 @@
 									<div class="pull-left section-toggle" title="click to toggle" data-toggle="collapse" data-target="#course-metadata">
 										<span class="icon-chevron-down"></span>
 									</div>
-									<div class="brand">Metadata</div>
+									<div class="brand">Description</div>
 								</div>
 							</div>
 							<div id="course-metadata" class="collapse <?php if( $course->show_metadata ) echo 'in'; ?>">
 								<input type="hidden" name="show-course-metadata" id="show-course-metadata" value="<?php echo $course->show_metadata ? '1' : '0'; ?>" />
 								<div class="well ekko-item-assets">
-									<div class="navbar">
-										<div class="navbar-inner">
-											<div class="container">
-												<div class="brand">Description</div>
-												<div class="navbar-form">
-													<input name="description" type="text" placeholder="Description" class="span9" value="<?php echo esc_attr( $course->description ); ?>" />
-												</div>
-											</div>
-										</div>
-									</div>
+									<input name="description" type="text" placeholder="Description" class="input-block-level" value="<?php echo esc_attr( $course->description ); ?>" />
 									<div class="navbar">
 										<div class="navbar-inner">
 											<div class="container">

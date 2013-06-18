@@ -164,11 +164,13 @@
 			$existing_resources = $hub->get_resources( $course_id );
 			$resources = $course->resources;
 			echo '<p>Uploading Media:<ul>';
-			foreach( $resources as $resource_id => $resource ) {
-				echo sprintf( '<li>%1$s</li>', basename( $resource->file ) );
-				if( in_array( $resource->sha1, $existing_resources ) )
-					continue;
-				$hub->upload_resource( $course_id, $resource->file, $resource->type );
+			foreach( $resources as $resource ) {
+				if( $resource->type == 'file' ) {
+					echo sprintf( '<li>%1$s</li>', basename( $resource->file ) );
+					if( in_array( $resource->sha1, $existing_resources ) )
+						continue;
+					$hub->upload_resource( $course_id, $resource->file, $resource->mimeType );
+				}
 			}
 			echo '</ul></p>';
 
@@ -186,7 +188,9 @@
 			$admins = array();
 			$users = array();
 			foreach( get_users() as $user ) {
-				$guid = strtolower( \WPGCXPlugin::singleton()->get_user_guid( $user ) );
+				$class = ( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
+					\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton() : \WPGCXPlugin::singleton();
+				$guid = $class->get_user_guid( $user );
 				if( $user->has_cap( 'administrator' ) )
 					$admins[] = $guid;
 				else

@@ -77,8 +77,9 @@
 			}
 
 			//Session was not valid, fetch a new session ID from the Ekko Hub
-			$wpgcx = \WPGCXPlugin::singleton();
-			$ticket = $wpgcx->cas_client()->retrievePT( $this->get_service(), $err_code, $err_msg );
+			$cas = ( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
+				\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_cas_client() : \WPGCXPlugin::singleton()->cas_client();
+			$ticket = $cas->retrievePT( $this->get_service(), $err_code, $err_msg );
 			$response = wp_remote_post(
 				$this->vnsprintf( self::ENDPOINT_LOGIN, array( 'hub' => \Ekko\URI_HUB ) ),
 				array( 'body' => array( 'ticket' => $ticket ) )
@@ -97,9 +98,6 @@
 		 * @param string $manifest
 		 */
 		public function create_course( $manifest ) {
-			global $logger;
-			$logger->debug( __CLASS__ . '::' . __FUNCTION__ );
-			$logger->debug( var_export( $manifest, true ) );
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
 				'session' => $this->get_session(),
@@ -114,7 +112,6 @@
 					'body' => $manifest
 				)
 			);
-			$logger->debug( var_export( $response, true ) );
 			$dom = $this->parse_xml_to_domdoc( $response[ 'body' ] );
 			if( $dom )
 				return $dom->documentElement->getAttribute( 'id' );
@@ -130,9 +127,6 @@
 		 * @param string $manifest XML String
 		 */
 		public function update_course( $course_id, $manifest ) {
-			global $logger;
-			$logger->debug( __CLASS__ . '::' . __FUNCTION__ );
-			$logger->debug( var_export( $manifest, true ) );
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
 				'session' => $this->get_session(),
@@ -149,7 +143,6 @@
 					'body' => $manifest
 				)
 			);
-			$logger->debug( var_export( $response, true ) );
 		}
 
 		/**
@@ -159,8 +152,6 @@
 		 * @param string $type file mime type
 		 */
 		public function upload_resource( $course_id, $file, $type ) {
-			global $logger;
-			$logger->debug( __CLASS__ . '::' . __FUNCTION__ );
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
 				'session' => $this->get_session(),
@@ -179,10 +170,6 @@
 				CURLOPT_HTTPHEADER => array( 'Content-Type: ' . $type ),
 			) );
 			$response = curl_exec( $ch );
-//			$logger->debug( var_export( $response, true ) );
-//			$logger->debug( 'Error Code: ' . curl_errno($ch) );
-//			$logger->debug( 'Error: ' . curl_error($ch) );
-//			$logger->debug( var_export( curl_getinfo( $ch ), true ) );
 			fclose( $file_stream );
 			curl_close( $ch );
 		}
@@ -194,8 +181,6 @@
 		 * @return array
 		 */
 		public function get_resources( $course_id ) {
-			global $logger;
-			$logger->debug( __CLASS__ . '::' . __FUNCTION__ );
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
 				'session' => $this->get_session(),
@@ -210,7 +195,6 @@
 					),
 				)
 			);
-//			$logger->debug( var_export( $response, true ) );
 			$dom = $this->parse_xml_to_domdoc( $response[ 'body' ] );
 			$resources = array();
 			if( $dom ) {
@@ -228,8 +212,6 @@
 		 * @return array|boolean
 		 */
 		public function publish_course( $course_id ) {
-			global $logger;
-			$logger->debug( __CLASS__ . '::' . __FUNCTION__ );
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
 				'session' => $this->get_session(),
@@ -244,7 +226,6 @@
 					),
 				)
 			);
-			$logger->debug( var_export( $response, true ) );
 			if( $response[ 'response' ][ 'code' ] == 200 )
 				return true;
 			$dom = $this->parse_xml_to_domdoc( $response[ 'body' ] );
@@ -252,7 +233,7 @@
 			if( $dom ) {
 				$xpath = $this->xpath_parser( $dom );
 				foreach( $xpath->query( '/hub:errors/hub:error/@message' ) as $error ) {
-					$errors[] = $error;
+					$errors[] = $error->value;
 				}
 			}
 			if( empty( $errors ) )

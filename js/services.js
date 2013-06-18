@@ -31,15 +31,26 @@ angular.module( 'EkkoApp.services', [] )
 					}
 				};
 			},
-			media: function( media_type, media_id ) {
+			media: function( type ) {
 				return {
 					id: UUID.get(),
-					type: media_type,
-					resource: {
-						type: 'file',
-						post_id: media_id
-					},
+					type: type,
+					resource: null,
 					thumbnail: null
+				};
+			},
+			media_file: function( post_id ) {
+				return {
+					type: 'file',
+					post_id: post_id
+				};
+			},
+			media_uri: function( uri, provider ) {
+				provider = ( typeof provider === "undefined" ) ? null : provider;
+				return {
+					type: 'uri',
+					uri: uri,
+					provider: provider
 				};
 			},
 			//Returns a new Quiz
@@ -48,6 +59,7 @@ angular.module( 'EkkoApp.services', [] )
 					type: 'quiz',
 					id: UUID.get(),
 					active: true,
+					title: 'Quiz',
 					questions: [ {
 						type: 'multiple',
 						active: true,

@@ -5,7 +5,7 @@
  * Description: Ekko - mLearning - eDisciple
  * Author:      Brian Zoetewey
  * Author URI:
- * Version:     0.0
+ * Version:     0.1
  * Text Domain: ekko
  * Domain Path: /languages/
  * License:     Modified BSD

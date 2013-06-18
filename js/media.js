@@ -5,6 +5,7 @@ window.ekko = window.ekko || {};
 		l10n,
 		workflows = {};
 
+	//Create new EkkoFrame, used internally by ekko.media.editor
 	media = ekko.media = function( attributes ) {
 		var frame;
 
@@ -21,16 +22,16 @@ window.ekko = window.ekko || {};
 	// Link any localized strings.
 	l10n = ekko.l10n = typeof _EkkoAppL10N === 'undefined' ? {} : _EkkoAppL10N.l10n;
 
+	// OEmbed Controller
 	media.controller.oEmbed = wp.media.controller.State.extend({
 		defaults: {
-			id:      'oembed',
-			url:     '',
-			menu:    'default',
-			content: 'embed',
-			toolbar: 'main-embed',
-			type:    'none',
-			pattern: /https?:\/\/.*/i,
-
+			id:       'oembed',
+			url:      '',
+			menu:     'default',
+			content:  'embed',
+			toolbar:  'main-embed',
+			type:     'none',
+			pattern:  /https?:\/\/.*/i,
 			title:    'oEmbed URL',
 			priority: 120
 		},
@@ -106,6 +107,7 @@ window.ekko = window.ekko || {};
 
 	});
 
+	// OEmbed View Content
 	media.view.oEmbed = wp.media.view.Embed.extend({
 		refresh: function() {
 			var type = this.model.get('type'),
@@ -126,10 +128,12 @@ window.ekko = window.ekko || {};
 		}
 	});
 
+	// OEmbed View Content - Type = 'none'
 	media.view.oEmbedNone = wp.media.view.Settings.extend({
 		className: 'oembed-none'
 	});
 
+	// OEmbed View Content - Type = 'video'
 	media.view.oEmbedVideo = wp.media.view.Settings.extend({
 		className: 'oembed-video',
 		template: wp.media.template( 'oembed-video' ),
@@ -144,6 +148,7 @@ window.ekko = window.ekko || {};
 		}
 	});
 
+	// OEmbed Toolbar
 	media.view.oEmbedToolbar = wp.media.view.Toolbar.Select.extend({
 		initialize: function() {
 			_.defaults( this.options, {
@@ -155,13 +160,17 @@ window.ekko = window.ekko || {};
 		},
 
 		refresh: function() {
-			var url = this.controller.state().props.get( 'url' );
-			this.get('select').model.set( 'disabled', ! url || url === 'http://' );
+			var state = this.controller.state(),
+				url = state.props.get( 'url' ),
+				pattern = state.get( 'pattern' );
+
+			this.get( 'select' ).model.set( 'disabled', ! url || ! url.match( pattern ) );
 
 			wp.media.view.Toolbar.Select.prototype.refresh.apply( this, arguments );
 		}
 	});
 
+	// EkkoFrame - The main media selector for Ekko
 	media.view.EkkoFrame = wp.media.view.MediaFrame.Select.extend( {
 
 		initialize: function() {
@@ -206,7 +215,13 @@ window.ekko = window.ekko || {};
 				new media.controller.oEmbed({
 					id:      'oembed-youtube',
 					title:   'YouTube',
-					pattern: /https?:\/\/(www\.)?youtube.com\/watch.*/i
+					pattern: /https?:\/\/((www\.)?youtube.com\/watch|youtu.be\/).*/i
+				}),
+
+				new media.controller.oEmbed({
+					id:      'oembed-vimeo',
+					title:   'Vimeo',
+					pattern: /https?:\/\/(www\.)?vimeo\.com\/.*/i
 				})
 
 			]);
@@ -285,6 +300,9 @@ window.ekko = window.ekko || {};
 
 	} );
 
+	/**
+	 * Ekko Banner Image
+	 */
 	ekko.media.EkkoBannerImage = {
 		get: function() {
 			return wp.media.view.settings.post.featuredImageId;
@@ -345,9 +363,11 @@ window.ekko = window.ekko || {};
 			});
 		}
 	};
-
 	$( ekko.media.EkkoBannerImage.init );
 
+	/**
+	 * Default Ekko Media workflow
+	 */
 	ekko.media.editor = {
 
 		add: function( id, options ) {
@@ -360,6 +380,18 @@ window.ekko = window.ekko || {};
 				state:    'insert',
 				multiple: false
 			} ) );
+
+			workflow.state( 'oembed-youtube' ).on( 'select', function() {
+				var state = workflow.state(),
+					data = state.props.toJSON();
+				state.trigger( 'embed', data, 'youtube' );
+			}, this );
+
+			workflow.state( 'oembed-vimeo' ).on( 'select', function() {
+				var state = workflow.state(),
+					data = state.props.toJSON();
+				state.trigger( 'embed', data, 'vimeo' );
+			} );
 
 			workflow.state( 'featured-image' ).on( 'select', ekko.media.EkkoBannerImage.select );
 			workflow.setState( workflow.options.state );
@@ -386,7 +418,46 @@ window.ekko = window.ekko || {};
 			return workflow.open();
 		}
 	};
-
 	_.bindAll( ekko.media.editor, 'open' );
+
+	/**
+	 * Thumbnail Media Chooser
+	 */
+	ekko.media.thumbnail = {
+		add: function( id, options ) {
+			var workflow = this.get( id );
+
+			if( workflow )
+				return workflow;
+
+			workflow = workflows[ id ] = new wp.media.view.MediaFrame.Select({
+				title: 'Select a Thumbnail Image',
+				library: { type: 'image' },
+				multiple: false
+			});
+
+			return workflow;
+		},
+
+		get: function( id ) {
+			return workflows[ id ];
+		},
+
+		remove: function( id ) {
+			delete workflows[ id ];
+		},
+
+		open: function( id, options ) {
+			var workflow;
+
+			workflow = this.get( id );
+
+			if( ! workflow )
+				workflow = this.add( id, options );
+
+			return workflow.open();
+		}
+	};
+	_.bindAll( ekko.media.thumbnail, 'open' );
 
 } )(jQuery);

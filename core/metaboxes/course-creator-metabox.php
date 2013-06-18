@@ -68,7 +68,6 @@
 		}
 
 		final public function fetch_oembed_response() {
-			global $logger;
 			$url = array_key_exists( 'url', $_REQUEST ) ? $_REQUEST[ 'url' ] : null;
 			if( $url ) {
 				$data = null;
