@@ -152,7 +152,7 @@ window.ekko = window.ekko || {};
 	media.view.oEmbedToolbar = wp.media.view.Toolbar.Select.extend({
 		initialize: function() {
 			_.defaults( this.options, {
-				text: 'Add It!!',
+				text: '',
 				requires: false
 			});
 
@@ -214,13 +214,13 @@ window.ekko = window.ekko || {};
 				// Embed states.
 				new media.controller.oEmbed({
 					id:      'oembed-youtube',
-					title:   'YouTube',
+					title:   l10n.youTubeTitle,
 					pattern: /https?:\/\/((www\.)?youtube.com\/watch|youtu.be\/).*/i
 				}),
 
 				new media.controller.oEmbed({
 					id:      'oembed-vimeo',
-					title:   'Vimeo',
+					title:   l10n.vimeoTitle,
 					pattern: /https?:\/\/(www\.)?vimeo\.com\/.*/i
 				})
 
@@ -431,7 +431,7 @@ window.ekko = window.ekko || {};
 				return workflow;
 
 			workflow = workflows[ id ] = new wp.media.view.MediaFrame.Select({
-				title: 'Select a Thumbnail Image',
+				title: l10n.addThumbnailTitle,
 				library: { type: 'image' },
 				multiple: false
 			});

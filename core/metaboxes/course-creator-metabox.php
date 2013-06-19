@@ -29,10 +29,10 @@
 
 					<div class="row-fluid course-nav">
 						<div class="span12">
-							<h1 class="pull-left">Course Content</h1>
+							<h1 class="pull-left"><?php esc_html_e( 'Course Content', \Ekko\TEXT_DOMAIN ); ?></h1>
 							<div class="pull-right ekko-content-buttons">
-								<a class="btn btn-ekko" href ng-click="lessons.push( $ekko.lesson() )"><i class="icon-plus icon-white"></i> Lesson</a>
-								<a class="btn btn-pimp" href ng-click="lessons.push( $ekko.quiz() )"><i class="icon-plus icon-white"></i> Quiz</a>
+								<a class="btn btn-ekko" href ng-click="lessons.push( $ekko.lesson() )"><i class="icon-plus icon-white"></i> <?php echo esc_html_x( 'Lesson', 'add lesson button', \Ekko\TEXT_DOMAIN ); ?></a>
+								<a class="btn btn-pimp" href ng-click="lessons.push( $ekko.quiz() )"><i class="icon-plus icon-white"></i> <?php echo esc_html_x( 'Quiz', 'add quiz button', \Ekko\TEXT_DOMAIN ); ?></a>
 							</div>
 						</div>
 					</div>

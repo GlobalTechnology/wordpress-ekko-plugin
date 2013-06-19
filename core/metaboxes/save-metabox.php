@@ -14,13 +14,13 @@
 						<div class="navbar ekko-item-blue">
 							<div class="navbar-inner">
 								<div class="container">
-									<div class="brand">Options</div>
+									<div class="brand"><?php esc_html_e( 'Options', \Ekko\TEXT_DOMAIN ); ?></div>
 								</div>
 							</div>
 							<div>
 								<div class="well">
 									<div class="pull-right">
-										<input type="submit" name="publish" id="publish" value="Save" class="btn btn-ekko btn-large">
+										<input type="submit" name="publish" id="publish" value="<?php esc_attr_e( 'Save', \Ekko\TEXT_DOMAIN ); ?>" class="btn btn-ekko btn-large">
 									</div>
 									<div class="clear"></div>
 								</div>

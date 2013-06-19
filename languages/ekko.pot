@@ -1,0 +1,301 @@
+# Copyright (C) 2013 Ekko
+# This file is distributed under the same license as the Ekko package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Ekko 0.1\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/ekko\n"
+"POT-Creation-Date: 2013-06-19 20:21:02+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2013-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+
+#: core/course-post-type.php:23
+msgid "Courses"
+msgstr ""
+
+#: core/course-post-type.php:24
+msgid "Course"
+msgstr ""
+
+#: core/course-post-type.php:26
+msgid "Add New Course"
+msgstr ""
+
+#: core/course-post-type.php:27
+msgid "Edit Course"
+msgstr ""
+
+#: core/course-post-type.php:28
+msgid "New Course"
+msgstr ""
+
+#: core/course-post-type.php:29
+msgid "View Course"
+msgstr ""
+
+#: core/course-post-type.php:30
+msgid "Search Courses"
+msgstr ""
+
+#: core/course-post-type.php:31
+msgid "No Courses Found"
+msgstr ""
+
+#: core/course-post-type.php:32
+msgid "No Courses found in Trash"
+msgstr ""
+
+#: core/course-post-type.php:33
+msgid "Parent Course:"
+msgstr ""
+
+#: core/course-post-type.php:34
+msgid "All Courses"
+msgstr ""
+
+#. #-#-#-#-#  ekko.pot (Ekko 0.1)  #-#-#-#-#
+#. Plugin Name of the plugin/theme
+#: core/course-post-type.php:35
+msgid "Ekko"
+msgstr ""
+
+#: core/course-post-type.php:41
+msgid "Ekko Courses"
+msgstr ""
+
+#: core/course-post-type.php:55
+msgid "Enter course title here"
+msgstr ""
+
+#: core/course-post-type.php:98
+msgid "Set banner image"
+msgstr ""
+
+#: core/course-post-type.php:99
+msgid "Set Banner Image"
+msgstr ""
+
+#: core/course-post-type.php:100 templates/course-template.php:107
+msgid "Add Media"
+msgstr ""
+
+#: core/course-post-type.php:101
+msgid "Add media"
+msgstr ""
+
+#: core/course-post-type.php:102
+msgid "Select a Thumbnail Image"
+msgstr ""
+
+#: core/course-post-type.php:103
+msgid "YouTube"
+msgstr ""
+
+#: core/course-post-type.php:104
+msgid "Vimeo"
+msgstr ""
+
+#: core/course-post-type.php:137
+msgid "Publish to Ekko"
+msgstr ""
+
+#: core/course-post-type.php:143
+msgid "Publish Course to EKKO"
+msgstr ""
+
+#: core/course-post-type.php:148
+msgid "Cheatin&#8217; uh?"
+msgstr ""
+
+#: core/course-post-type.php:152
+msgid "Publishing Course to EKKO"
+msgstr ""
+
+#: core/course-post-type.php:155
+msgid "Publishing"
+msgstr ""
+
+#: core/course-post-type.php:164
+msgid "Course manifest updated"
+msgstr ""
+
+#: core/course-post-type.php:169
+msgid "Uploading Media"
+msgstr ""
+
+#: core/course-post-type.php:182
+msgid "One or more Errors occured during publish"
+msgstr ""
+
+#: core/course-post-type.php:189
+msgid "Course successfully published!"
+msgstr ""
+
+#: core/course-post-type.php:205
+msgid "Return to Courses page"
+msgstr ""
+
+#: core/metaboxes/banner-metabox.php:20
+msgid "Banner"
+msgstr ""
+
+#: core/metaboxes/banner-metabox.php:23
+msgid "Set Banner"
+msgstr ""
+
+#: core/metaboxes/course-creator-metabox.php:32
+msgid "Course Content"
+msgstr ""
+
+#: core/metaboxes/course-creator-metabox.php:34
+msgctxt "add lesson button"
+msgid "Lesson"
+msgstr ""
+
+#: core/metaboxes/course-creator-metabox.php:35
+msgctxt "add quiz button"
+msgid "Quiz"
+msgstr ""
+
+#: core/metaboxes/course-meta-metabox.php:24 templates/course-template.php:8
+#: templates/course-template.php:56 templates/course-template.php:100
+#: templates/course-template.php:148 templates/course-template.php:166
+msgid "click to toggle"
+msgstr ""
+
+#: core/metaboxes/course-meta-metabox.php:27
+msgctxt "input label"
+msgid "Description"
+msgstr ""
+
+#: core/metaboxes/course-meta-metabox.php:33
+msgctxt "input placeholder"
+msgid "Description"
+msgstr ""
+
+#: core/metaboxes/course-meta-metabox.php:37
+msgctxt "input label"
+msgid "Author"
+msgstr ""
+
+#: core/metaboxes/course-meta-metabox.php:39
+msgctxt "input placeholder"
+msgid "Name"
+msgstr ""
+
+#: core/metaboxes/course-meta-metabox.php:40
+msgctxt "input placeholder"
+msgid "Email"
+msgstr ""
+
+#: core/metaboxes/course-meta-metabox.php:41
+msgctxt "input placeholder"
+msgid "URL"
+msgstr ""
+
+#: core/metaboxes/course-meta-metabox.php:49
+msgctxt "input label"
+msgid "Copyright"
+msgstr ""
+
+#: core/metaboxes/course-meta-metabox.php:53
+msgctxt "input placeholder"
+msgid "Copyright"
+msgstr ""
+
+#: core/metaboxes/save-metabox.php:17
+msgid "Options"
+msgstr ""
+
+#: core/metaboxes/save-metabox.php:23
+msgid "Save"
+msgstr ""
+
+#: templates/course-template.php:12
+msgid "Lesson"
+msgstr ""
+
+#: templates/course-template.php:16
+msgctxt "lesson title placeholder"
+msgid "Title"
+msgstr ""
+
+#: templates/course-template.php:25
+msgid "Remove Lesson"
+msgstr ""
+
+#: templates/course-template.php:60
+msgid "Quiz"
+msgstr ""
+
+#: templates/course-template.php:64
+msgctxt "quiz title placeholder"
+msgid "Title"
+msgstr ""
+
+#: templates/course-template.php:73 templates/course-template.php:169
+msgid "Multiple Choice"
+msgstr ""
+
+#: templates/course-template.php:75
+msgid "Remove"
+msgstr ""
+
+#: templates/course-template.php:103
+msgid "Media"
+msgstr ""
+
+#: templates/course-template.php:127
+msgid "Image"
+msgstr ""
+
+#: templates/course-template.php:130
+msgid "Video"
+msgstr ""
+
+#: templates/course-template.php:133
+msgid "Audio"
+msgstr ""
+
+#: templates/course-template.php:138
+msgid "thumbnail"
+msgstr ""
+
+#: templates/course-template.php:139 templates/course-template.php:185
+#: templates/course-template.php:209
+msgid "remove"
+msgstr ""
+
+#: templates/course-template.php:151
+msgid "Text"
+msgstr ""
+
+#: templates/course-template.php:173
+msgctxt "question placeholder"
+msgid "Question?"
+msgstr ""
+
+#: templates/course-template.php:180
+msgctxt "add option button"
+msgid "Option"
+msgstr ""
+
+#: templates/course-template.php:197
+msgid "Option"
+msgstr ""
+
+#: templates/course-template.php:201
+msgctxt "multiple question choice placeholder"
+msgid "Choice"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "Ekko - mLearning - eDisciple"
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Brian Zoetewey"
+msgstr ""

@@ -21,24 +21,24 @@
 						<div class="navbar">
 							<div class="navbar-inner">
 								<div class="container">
-									<div class="pull-left section-toggle" title="click to toggle" data-toggle="collapse" data-target="#course-metadata">
+									<div class="pull-left section-toggle" title="<?php esc_attr_e( 'click to toggle', \Ekko\TEXT_DOMAIN ); ?>" data-toggle="collapse" data-target="#course-metadata">
 										<span class="icon-chevron-down"></span>
 									</div>
-									<div class="brand">Description</div>
+									<div class="brand"><?php echo esc_html_x( 'Description', 'input label', \Ekko\TEXT_DOMAIN ); ?></div>
 								</div>
 							</div>
 							<div id="course-metadata" class="collapse <?php if( $course->show_metadata ) echo 'in'; ?>">
 								<input type="hidden" name="show-course-metadata" id="show-course-metadata" value="<?php echo $course->show_metadata ? '1' : '0'; ?>" />
 								<div class="well ekko-item-assets">
-									<input name="description" type="text" placeholder="Description" class="input-block-level" value="<?php echo esc_attr( $course->description ); ?>" />
+									<input name="description" type="text" placeholder="<?php echo esc_attr_x( 'Description', 'input placeholder', \Ekko\TEXT_DOMAIN ); ?>" class="input-block-level" value="<?php echo esc_attr( $course->description ); ?>" />
 									<div class="navbar">
 										<div class="navbar-inner">
 											<div class="container">
-												<div class="brand">Author</div>
+												<div class="brand"><?php echo esc_html_x( 'Author', 'input label', \Ekko\TEXT_DOMAIN ); ?></div>
 												<div class="navbar-form">
-													<input name="author_name" type="text" placeholder="Name" class="span3" value="<?php echo esc_attr( $course->author_name ); ?>" />
-													<input name="author_email" type="text" placeholder="Email" class="span3" value="<?php echo esc_attr( $course->author_email ); ?>" />
-													<input name="author_url" type="text" placeholder="URL" class="span3" value="<?php echo esc_attr( $course->author_url ); ?>" />
+													<input name="author_name" type="text" placeholder="<?php echo esc_attr_x( 'Name', 'input placeholder', \Ekko\TEXT_DOMAIN ); ?>" class="span3" value="<?php echo esc_attr( $course->author_name ); ?>" />
+													<input name="author_email" type="text" placeholder="<?php echo esc_attr_x( 'Email', 'input placeholder', \Ekko\TEXT_DOMAIN ); ?>" class="span3" value="<?php echo esc_attr( $course->author_email ); ?>" />
+													<input name="author_url" type="text" placeholder="<?php echo esc_attr_x( 'URL', 'input placeholder', \Ekko\TEXT_DOMAIN ); ?>" class="span3" value="<?php echo esc_attr( $course->author_url ); ?>" />
 												</div>
 											</div>
 										</div>
@@ -46,11 +46,11 @@
 									<div class="navbar">
 										<div class="navbar-inner">
 											<div class="container">
-												<div class="brand">Copyright</div>
+												<div class="brand"><?php echo esc_html_x( 'Copyright', 'input label', \Ekko\TEXT_DOMAIN ); ?></div>
 												<div class="navbar-form">
 													<div class="input-prepend span9">
 														<span class="add-on">&copy;</span>
-														<input name="copyright" type="text" placeholder="Copyright" class="input-block-level" value="<?php echo esc_attr( $course->copyright ); ?>" />
+														<input name="copyright" type="text" placeholder="<?php echo esc_attr_x( 'Copyright', 'input placeholder', \Ekko\TEXT_DOMAIN ); ?>" class="input-block-level" value="<?php echo esc_attr( $course->copyright ); ?>" />
 													</div>
 												</div>
 											</div>

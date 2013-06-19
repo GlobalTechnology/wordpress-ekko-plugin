@@ -17,10 +17,10 @@
 						<div class="navbar ekko-item-green">
 							<div class="navbar-inner">
 								<div class="container">
-									<div class="brand">Banner</div>
+									<div class="brand"><?php esc_html_e( 'Banner', \Ekko\TEXT_DOMAIN ); ?></div>
 									<div class="navbar-form pull-right">
 										<div class="btn-group">
-											<a class="btn btn-success" href="#"><i class="icon-picture icon-white"></i> Set Banner</a>
+											<a class="btn btn-success" href="#"><i class="icon-picture icon-white"></i> <?php esc_html_e( 'Set Banner', \Ekko\TEXT_DOMAIN ); ?></a>
 										</div>
 									</div>
 								</div>

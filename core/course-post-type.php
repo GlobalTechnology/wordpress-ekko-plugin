@@ -95,10 +95,13 @@
 			wp_localize_script( 'ekko-app', '_EkkoAppL10N', array(
 				'api_url' => admin_url( '/admin-ajax.php' ),
 				'l10n' => array(
-					'setBanner'      => __( 'Set banner image', \Ekko\TEXT_DOMAIN ),
-					'setBannerTitle' => __( 'Set Banner Image', \Ekko\TEXT_DOMAIN ),
-					'addMediaTitle'  => __( 'Add Media', \Ekko\TEXT_DOMAIN ),
-					'addMedia'       => __( 'Add media', \Ekko\TEXT_DOMAIN ),
+					'setBanner'         => __( 'Set banner image', \Ekko\TEXT_DOMAIN ),
+					'setBannerTitle'    => __( 'Set Banner Image', \Ekko\TEXT_DOMAIN ),
+					'addMediaTitle'     => __( 'Add Media', \Ekko\TEXT_DOMAIN ),
+					'addMedia'          => __( 'Add media', \Ekko\TEXT_DOMAIN ),
+					'addThumbnailTitle' => __( 'Select a Thumbnail Image', \Ekko\TEXT_DOMAIN ),
+					'youTubeTitle'      => __( 'YouTube', \Ekko\TEXT_DOMAIN ),
+					'vimeoTitle'        => __( 'Vimeo', \Ekko\TEXT_DOMAIN ),
 				)
 			) );
 
@@ -131,13 +134,13 @@
 			if( get_post_type( $post ) == $this->post_type() ) {
 				if( array_key_exists( 'inline hide-if-no-js', $actions ) )
 					unset( $actions[ 'inline hide-if-no-js' ] );
-				$actions['ekko-publish'] = "<a class='ekko-publish' title='Publish to Ekko' href='" . wp_nonce_url( admin_url( sprintf( 'edit.php?post=%d&amp;post_type=%s&amp;page=ekko-publish', $post->ID, $this->post_type() ) ), 'ekko-publish_' . $post->ID ) . "'>" . __( 'Publish to Ekko' ) . "</a>";
+				$actions['ekko-publish'] = "<a class='ekko-publish' title='" . esc_attr__( 'Publish to Ekko', \Ekko\TEXT_DOMAIN ) . "' href='" . wp_nonce_url( admin_url( sprintf( 'edit.php?post=%d&amp;post_type=%s&amp;page=ekko-publish', $post->ID, $this->post_type() ) ), 'ekko-publish_' . $post->ID ) . "'>" . __( 'Publish to Ekko', \Ekko\TEXT_DOMAIN ) . "</a>";
 			}
 			return $actions;
 		}
 
 		final public function add_admin_menus() {
-			add_submenu_page( 'edit.php?post_type=ekko-course', 'Publish Course to EKKO', null, 'edit_posts', 'ekko-publish', array( &$this, 'publish_to_ekko' ) );
+			add_submenu_page( 'edit.php?post_type=ekko-course', __( 'Publish Course to EKKO', \Ekko\TEXT_DOMAIN ), null, 'edit_posts', 'ekko-publish', array( &$this, 'publish_to_ekko' ) );
 		}
 
 		final public function check_publish() {
@@ -146,10 +149,10 @@
 		}
 
 		final public function publish_to_ekko() {
-			echo '<div class="wrap"><div id="icon-post" class="icon32"><br></div><h2>Publish Course to EKKO</h2></div>';
+			echo '<div class="wrap"><div id="icon-post" class="icon32"><br></div><h2>' . esc_html__( 'Publishing Course to EKKO', \Ekko\TEXT_DOMAIN ) . '</h2></div>';
 			$post = get_post( $_REQUEST[ 'post' ] );
 			$course = $this->get_post( $post );
-			echo sprintf( '<h4>Publishing: %1$s</h4>', $course->post_title );
+			echo sprintf( '<h4>%2$s: %1$s</h4>', $course->post_title, esc_html__( 'Publishing', \Ekko\TEXT_DOMAIN ) );
 
 			$hub = \Ekko\Core\Services\Hub::singleton();
 			$course_id = $course->course_ID;
@@ -158,12 +161,12 @@
 				$course_id = $hub->create_course( $course->get_manifest() );
 			else
 				$hub->update_course( $course_id, $course->get_manifest() );
-			echo sprintf( '<p>Course manifest updated</p>' );
+			echo sprintf( '<p>%1$s</p>', esc_html__( 'Course manifest updated', \Ekko\TEXT_DOMAIN ) );
 			$course->course_ID = $course_id;
 
 			$existing_resources = $hub->get_resources( $course_id );
 			$resources = $course->resources;
-			echo '<p>Uploading Media:<ul>';
+			echo '<p>' . esc_html__( 'Uploading Media', \Ekko\TEXT_DOMAIN ) . ':<ul>';
 			foreach( $resources as $resource ) {
 				if( $resource->type == 'file' ) {
 					echo sprintf( '<li>%1$s</li>', basename( $resource->file ) );
@@ -176,14 +179,14 @@
 
 			$result = $hub->publish_course( $course_id );
 			if( $result !== true ) {
-				echo '<p><strong>One or more Errors occured during publish:</strong>';
+				echo '<p><strong>' . esc_html__( 'One or more Errors occured during publish', \Ekko\TEXT_DOMAIN ) . ':</strong>';
 				if( is_array( $result ) )
 					foreach( $result as $error )
 						echo '<div>' . esc_html( $error ) . '</div>';
 				echo '</p>';
 			}
 			else
-				echo '<p><strong>Course successfully published!</strong></p>';
+				echo '<p><strong>' . esc_html__( 'Course successfully published!', \Ekko\TEXT_DOMAIN ) . '</strong></p>';
 
 			$admins = array();
 			$users = array();
@@ -199,7 +202,7 @@
 			$hub->sync_admins( $course_id, $admins );
 			$hub->sync_enrolled( $course_id, $users );
 
-			?><a href="<?php echo admin_url( 'edit.php?post_type=ekko-course' ); ?>">Return to Courses page<?php
+			?><a href="<?php echo admin_url( 'edit.php?post_type=ekko-course' ); ?>"><?php esc_html__( 'Return to Courses page', \Ekko\TEXT_DOMAIN ); ?></a><?php
 		}
 
 	}
