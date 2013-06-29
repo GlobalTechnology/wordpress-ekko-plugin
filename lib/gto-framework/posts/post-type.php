@@ -179,7 +179,7 @@
 		 */
 		final public function _pre_save_post( array $data, array $postarr ) {
 			if( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return $data;
-			if( get_post_type( $post ) != $this->post_type ) return $data;
+			if( get_post_type() != $this->post_type ) return $data;
 
 			$data = $this->pre_save_post( $data, $postarr );
 			return $data;
