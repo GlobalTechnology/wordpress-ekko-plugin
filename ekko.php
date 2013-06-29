@@ -1,11 +1,11 @@
 <?php namespace Ekko {
 /*
- * Plugin Name: Ekko
+ * Plugin Name: Ekko - Development
  * Plugin URI:
- * Description: Ekko - mLearning - eDisciple
+ * Description: *WARNING* Unstable Development Version. Ekko Course Creator and Content Management
  * Author:      Brian Zoetewey
  * Author URI:
- * Version:     0.1
+ * Version:     0.1-dev
  * Text Domain: ekko
  * Domain Path: /languages/
  * License:     Modified BSD
