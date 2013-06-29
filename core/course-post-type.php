@@ -61,6 +61,8 @@
 			add_action( 'load-ekko-course_page_ekko-publish', array( &$this, 'check_publish' ), 10, 0 );
 			add_action( 'print_media_templates', array( &$this, 'media_templates' ), 10, 0 );
 			add_action( 'dbx_post_sidebar', array( &$this, 'course_templates' ), 10, 0 );
+
+			add_action( 'redirect_post_location', array( &$this, 'redirect_post' ), 10, 2 );
 		}
 
 		final protected function post_type_title() {
@@ -140,6 +142,19 @@
 
 		final public function course_templates() {
 			include( \Ekko\PLUGIN_DIR . 'templates/course-template.php' );
+		}
+
+		final public function redirect_post( $location, $post_id ) {
+			if( get_post_type( $post_id ) == $this->post_type() ) {
+				if( isset( $_POST[ 'save' ] ) ) {
+					$location = remove_query_arg( 'message', $location );
+					return add_query_arg( 'message', 4, $location );
+				}
+				elseif( isset( $_POST[ 'publish' ] ) ) {
+					return admin_url( sprintf( 'edit.php?post=%d&post_type=%s&page=ekko-publish&_wpnonce=%s', $post_id, $this->post_type(), wp_create_nonce( 'ekko-publish_' . $post_id ) ) );
+				}
+			}
+			return $location;
 		}
 
 		final public function post_row_actions( $actions, $post ) {

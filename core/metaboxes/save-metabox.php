@@ -19,8 +19,11 @@
 							</div>
 							<div>
 								<div class="well">
+									<div class="pull-left">
+										<input type="submit" name="save" id="save" value="<?php esc_attr_e( 'Save', \Ekko\TEXT_DOMAIN ); ?>" class="btn btn-ekko btn-large">
+									</div>
 									<div class="pull-right">
-										<input type="submit" name="publish" id="publish" value="<?php esc_attr_e( 'Save', \Ekko\TEXT_DOMAIN ); ?>" class="btn btn-ekko btn-large">
+										<input type="submit" name="publish" id="publish" value="<?php esc_attr_e( 'Publish', \Ekko\TEXT_DOMAIN ); ?>" class="btn btn-ekko btn-large">
 									</div>
 									<div class="clear"></div>
 								</div>
