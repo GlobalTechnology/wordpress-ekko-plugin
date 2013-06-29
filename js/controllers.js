@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module( 'EkkoApp.controllers', [] )
-	.controller( 'CourseController', [ '$scope', function( $scope ) {
+	.controller( 'CourseController', [ '$scope', '$location', '$anchorScroll', function( $scope, $location, $anchorScroll ) {
 
 		$scope.sortableOpts = {
 			handle:'.item-drag-handle',
@@ -21,6 +21,12 @@ angular.module( 'EkkoApp.controllers', [] )
 			_.defer( function() {
 				$scope.$broadcast( 'sortStop' );
 			} );
+		};
+		
+		$scope.addItem = function( item ) {
+			$scope.lessons.push( item );
+			$location.hash( item.id );
+			_.defer( function() {$anchorScroll( item.id ); } );
 		};
 
 		//Initialize course form input field JSON
