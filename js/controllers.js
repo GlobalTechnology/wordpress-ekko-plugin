@@ -37,7 +37,7 @@ angular.module( 'EkkoApp.controllers', [] )
 		}, true);
 
 	} ] )
-	.controller( 'MediaAssetsController', [ '$scope', '$rootScope', function( $scope, $rootScope ) {
+	.controller( 'MediaAssetsController', [ '$scope', function( $scope ) {
 		//Callback for adding Media to lessons
 		$scope.addMediaCallback = function( selection ) {
 			var state = $scope._editor.state();
@@ -51,6 +51,7 @@ angular.module( 'EkkoApp.controllers', [] )
 
 			$scope.$apply( function() {
 				$scope.item.media.assets.push( item );
+				$scope.item.media.active = true;
 			} );
 		};
 
@@ -70,6 +71,7 @@ angular.module( 'EkkoApp.controllers', [] )
 
 			$scope.$apply( function() {
 				$scope.item.media.assets.push( item );
+				$scope.item.media.active = true;
 			} );
 		};
 
