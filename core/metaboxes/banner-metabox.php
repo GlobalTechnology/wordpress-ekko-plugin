@@ -68,7 +68,7 @@
 				if( $banner_html )
 					return $banner_html;
 			}
-			return '';
+			return '<img width="240" height="135" src="' . \Ekko\PLUGIN_URL . 'images/default-banner.png" class="attachment-ekko-banner-thumbnail" />';
 		}
 
 	}

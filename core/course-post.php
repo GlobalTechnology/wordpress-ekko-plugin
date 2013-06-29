@@ -129,13 +129,11 @@
 			$author->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:email', $this->author_email ) );
 			$author->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:url', $this->author_url ) );
 			//Banner
-			if( $banner_id = (int) get_post_thumbnail_id( $this->ID ) ) {
-				if( $banner_id > 0 ) {
-					$banner = $meta->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:banner' ) );
-					$banner_object = (object) array( 'type' => 'file', 'post_id' => $banner_id, 'banner' => true );
-					$banner->setAttribute( 'resource', $this->get_resource_id( $banner_object ) );
-				}
-			}
+			$banner_id = (int) get_post_thumbnail_id( $this->ID );
+			$banner = $meta->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:banner' ) );
+			$banner_object = (object) array( 'type' => 'file', 'post_id' => $banner_id, 'banner' => true );
+			$banner->setAttribute( 'resource', $this->get_resource_id( $banner_object ) );
+
 			//Description
 			$meta->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:description', $this->description ) );
 			//Copyright
@@ -209,19 +207,29 @@
 				switch( $resource_item->type ) {
 					case 'file':
 						$media_id = (int) $resource_item->post_id;
-						$media_post = get_post( $media_id );
-						$media_file = get_attached_file( $media_id );
-						$media_meta = wp_get_attachment_metadata( $media_id );
-						if( is_array( $media_meta ) ) {
-							if( is_array( $media_meta[ 'sizes' ] ) && array_key_exists( 'ekko-image', $media_meta[ 'sizes' ] ) ) {
-								$media_file = dirname( $media_file ) . '/' . $media_meta[ 'sizes' ][ 'ekko-image' ][ 'file' ];
-							}
-						}
+						if( $media_id <= 0 && $resource_item->banner == true ) {
+							$media_file = \Ekko\PLUGIN_DIR . 'images/default-banner.png';
 
-						$resource->setAttribute( 'file', basename( $resource_item->file = $media_file ) );
-						$resource->setAttribute( 'size', $resource_item->size = filesize( $media_file ) );
-						$resource->setAttribute( 'sha1', $resource_item->sha1 = sha1_file( $media_file ) );
-						$resource->setAttribute( 'mimeType', $resource_item->mimeType = $media_post->post_mime_type );
+							$resource->setAttribute( 'file', basename( $resource_item->file = $media_file ) );
+							$resource->setAttribute( 'size', $resource_item->size = filesize( $media_file ) );
+							$resource->setAttribute( 'sha1', $resource_item->sha1 = sha1_file( $media_file ) );
+							$resource->setAttribute( 'mimeType', $resource_item->mimeType = 'image/png' );
+						}
+						else {
+							$media_post = get_post( $media_id );
+							$media_file = get_attached_file( $media_id );
+							$media_meta = wp_get_attachment_metadata( $media_id );
+							if( is_array( $media_meta ) ) {
+								if( is_array( $media_meta[ 'sizes' ] ) && array_key_exists( 'ekko-image', $media_meta[ 'sizes' ] ) ) {
+									$media_file = dirname( $media_file ) . '/' . $media_meta[ 'sizes' ][ 'ekko-image' ][ 'file' ];
+								}
+							}
+
+							$resource->setAttribute( 'file', basename( $resource_item->file = $media_file ) );
+							$resource->setAttribute( 'size', $resource_item->size = filesize( $media_file ) );
+							$resource->setAttribute( 'sha1', $resource_item->sha1 = sha1_file( $media_file ) );
+							$resource->setAttribute( 'mimeType', $resource_item->mimeType = $media_post->post_mime_type );
+						}
 						break;
 					case 'uri':
 						$resource->setAttribute( 'uri', $resource_item->uri );
