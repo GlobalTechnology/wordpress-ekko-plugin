@@ -64,11 +64,13 @@
 		 * Return a valid Ekko Hub session ID
 		 * @return string
 		 */
-		public function get_session() {
-			$user_id = get_current_user_id();
+		public function get_session( $superuser = false ) {
+			$user = ( $superuser ) ?
+				\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_user_by_guid( \Ekko\GUID_SUPER_ADMIN ) :
+				wp_get_current_user();
 
 			//Retrieve session from WordPress user meta
-			$session = get_user_meta( $user_id, self::META_SESSION, true );
+			$session = get_user_meta( $user->ID, self::META_SESSION, true );
 
 			//Return session ID if session is valid
 			if( $session && $session instanceof \Ekko\Core\Services\HubSession ) {
@@ -77,9 +79,9 @@
 			}
 
 			//Session was not valid, fetch a new session ID from the Ekko Hub
-			$cas = ( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
-				\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_cas_client() : \WPGCXPlugin::singleton()->cas_client();
-			$ticket = $cas->retrievePT( $this->get_service(), $err_code, $err_msg );
+			$ticket = ( $superuser ) ?
+				\Ekko\Core\Services\TheKeyOAuth::singleton()->get_ticket( $this->get_service(), \Ekko\OAUTH_REFRESH_TOKEN ) :
+				\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_cas_client()->retrievePT( $this->get_service(), $err_code, $err_msg );
 			$response = wp_remote_post(
 				$this->vnsprintf( self::ENDPOINT_LOGIN, array( 'hub' => \Ekko\URI_HUB ) ),
 				array( 'body' => array( 'ticket' => $ticket ) )
@@ -87,7 +89,7 @@
 			$session = new HubSession( $response[ 'body' ] );
 
 			//Store the new Session into the WordPress user meta
-			update_user_meta( $user_id, self::META_SESSION, $session );
+			update_user_meta( $user->ID, self::META_SESSION, $session );
 
 			//Return the Session ID
 			return $session->session;
@@ -97,10 +99,10 @@
 		 * Create a Course
 		 * @param string $manifest
 		 */
-		public function create_course( $manifest ) {
+		public function create_course( $manifest, $session = null ) {
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
-				'session' => $this->get_session(),
+				'session' => ( $session ) ? $session : $this->get_session(),
 			);
 			$response = wp_remote_post(
 				$this->vnsprintf( self::ENDPOINT_CREATE_COURSE, $params ),
@@ -126,10 +128,10 @@
 		 * @param int $course_id
 		 * @param string $manifest XML String
 		 */
-		public function update_course( $course_id, $manifest ) {
+		public function update_course( $course_id, $manifest, $session = null ) {
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
-				'session' => $this->get_session(),
+				'session' => ( $session ) ? $session : $this->get_session(),
 				'course' => $course_id,
 			);
 			$response = wp_remote_request(
@@ -151,10 +153,10 @@
 		 * @param file $file absolute file path
 		 * @param string $type file mime type
 		 */
-		public function upload_resource( $course_id, $file, $type ) {
+		public function upload_resource( $course_id, $file, $type, $session = null ) {
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
-				'session' => $this->get_session(),
+				'session' => ( $session ) ? $session : $this->get_session(),
 				'course' => $course_id,
 			);
 			$ch = curl_init();
@@ -180,10 +182,10 @@
 		 * @param string $course_id
 		 * @return array
 		 */
-		public function get_resources( $course_id ) {
+		public function get_resources( $course_id, $session = null ) {
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
-				'session' => $this->get_session(),
+				'session' => ( $session ) ? $session : $this->get_session(),
 				'course' => $course_id,
 			);
 			$response = wp_remote_get(
@@ -211,10 +213,10 @@
 		 *
 		 * @return array|boolean
 		 */
-		public function publish_course( $course_id ) {
+		public function publish_course( $course_id, $session = null ) {
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
-				'session' => $this->get_session(),
+				'session' => ( $session ) ? $session : $this->get_session(),
 				'course' => $course_id,
 			);
 			$response = wp_remote_post(
@@ -237,7 +239,7 @@
 				}
 			}
 			if( empty( $errors ) )
-				$errors[] = 'Unknown Error';
+				$errors[] = __( 'Unknown Error', \Ekko\TEXT_DOMAIN );
 			return $errors;
 		}
 
@@ -247,10 +249,10 @@
 		 * @param string $endpoint
 		 * @return array
 		 */
-		private function get_users( $course_id, $endpoint = self::ENDPOINT_ENROLLED ) {
+		private function get_users( $course_id, $endpoint = self::ENDPOINT_ENROLLED, $session = null ) {
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
-				'session' => $this->get_session(),
+				'session' => ( $session ) ? $session : $this->get_session(),
 				'course' => $course_id,
 			);
 			$response = wp_remote_get(
@@ -279,12 +281,16 @@
 		 * @param string $endpoint
 		 * @return void
 		 */
-		private function update_users( $course_id, array $add = array(), array $remove = array(), $endpoint = self::ENDPOINT_ENROLLED ) {
+		private function update_users( $course_id, array $add = array(), array $remove = array(), $endpoint = self::ENDPOINT_ENROLLED, $session = null ) {
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
-				'session' => $this->get_session(),
+				'session' => ( $session ) ? $session : $this->get_session(),
 				'course' => $course_id,
 			);
+
+			//Add the Super Admin to all courses
+			if( $endpoint == self::ENDPOINT_ADMINS )
+				$add[] = \Ekko\GUID_SUPER_ADMIN;
 
 			$users = array_merge(
 				array_map( function( $guid ) {

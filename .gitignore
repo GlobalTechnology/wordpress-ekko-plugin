@@ -1,3 +1,4 @@
 *.log
 .svn
 courses
+conf.php

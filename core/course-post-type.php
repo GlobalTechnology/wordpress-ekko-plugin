@@ -17,6 +17,18 @@
 			return null;
 		}
 
+		final public function get_courses() {
+			$query = new \WP_Query( array(
+				'post_type' => $this->post_type(),
+				'post_status' => 'publish',
+				'nopaging'    => true,
+			) );
+			$courses = array();
+			foreach( $query->posts as $post )
+				$courses[] = $this->get_course( $post );
+			return $courses;
+		}
+
 		protected function post_type_args() {
 			return array(
 				'labels' => array(

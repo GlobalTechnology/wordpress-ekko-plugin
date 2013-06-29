@@ -39,6 +39,7 @@
  */
 
 	require_once( dirname( __FILE__ ) . '/constants.php' );
+	require_once( dirname( __FILE__ ) . '/conf.php' );
 	require_once( dirname( __FILE__ ) . '/autoload.php' );
 	require_once( dirname( __FILE__ ) . '/lib/gto-framework/autoload.php' );
 
