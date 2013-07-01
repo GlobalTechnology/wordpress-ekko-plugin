@@ -249,7 +249,7 @@
 		 * @param string $endpoint
 		 * @return array
 		 */
-		private function get_users( $course_id, $endpoint = self::ENDPOINT_ENROLLED, $session = null ) {
+		public function get_users( $course_id, $endpoint = self::ENDPOINT_ENROLLED, $session = null ) {
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
 				'session' => ( $session ) ? $session : $this->get_session(),
@@ -281,7 +281,7 @@
 		 * @param string $endpoint
 		 * @return void
 		 */
-		private function update_users( $course_id, array $add = array(), array $remove = array(), $endpoint = self::ENDPOINT_ENROLLED, $session = null ) {
+		public function update_users( $course_id, array $add = array(), array $remove = array(), $endpoint = self::ENDPOINT_ENROLLED, $session = null ) {
 			$params = array(
 				'hub' => \Ekko\URI_HUB,
 				'session' => ( $session ) ? $session : $this->get_session(),
