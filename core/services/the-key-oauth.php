@@ -2,7 +2,7 @@
 
 	final class TheKeyOAuth {
 
-		const CAS_URI = 'https://casdev.gcx.org/cas';
+		const CAS_URI = 'https://thekey.me/cas';
 
 		/**
 		 * Singleton instance
