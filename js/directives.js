@@ -92,7 +92,4 @@ angular.module('EkkoApp.directives', [])
 				});
 			}
 		};
-	} ] )
-	.directive( 'testing', [ function() {
-
 	} ] );
