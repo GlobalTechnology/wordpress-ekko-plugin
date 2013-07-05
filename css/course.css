@@ -47,7 +47,8 @@
 	cursor: pointer;
 }
 
-.section-toggle span.icon-chevron-down
+.section-toggle span.icon-chevron-down,
+.section-toggle span.icon-chevron-right
 {
 	margin-top: 10px;
 	margin-left: 12px;

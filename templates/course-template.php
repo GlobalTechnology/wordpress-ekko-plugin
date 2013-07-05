@@ -6,7 +6,7 @@
 				<div class="container">
 
 					<div class="pull-left section-toggle" title="<?php esc_attr_e( 'click to toggle', \Ekko\TEXT_DOMAIN ); ?>" ng-click="item.active = !item.active">
-						<span class="icon-chevron-down"></span>
+						<span ng-class="{'icon-chevron-right':!item.active, 'icon-chevron-down':item.active}"></span>
 					</div>
 
 					<div class="brand"><?php esc_html_e( 'Lesson', \Ekko\TEXT_DOMAIN ); ?></div>
@@ -54,7 +54,7 @@
 				<div class="container">
 
 					<div class="pull-left section-toggle" title="<?php esc_attr_e( 'click to toggle', \Ekko\TEXT_DOMAIN ); ?>" ng-click="item.active = !item.active">
-						<span class="icon-chevron-down"></span>
+						<span ng-class="{'icon-chevron-right':!item.active, 'icon-chevron-down':item.active}"></span>
 					</div>
 
 					<div class="brand"><?php esc_html_e( 'Quiz', \Ekko\TEXT_DOMAIN ); ?></div>
@@ -98,7 +98,7 @@
 		<div class="navbar-inner">
 			<div class="container">
 				<div class="pull-left section-toggle" title="<?php esc_attr_e( 'click to toggle', \Ekko\TEXT_DOMAIN ); ?>" ng-click="item.media.active = !item.media.active">
-					<span class="icon-chevron-down"></span>
+					<span ng-class="{'icon-chevron-right':!item.media.active, 'icon-chevron-down':item.media.active}"></span>
 				</div>
 				<div class="brand"><?php esc_html_e( 'Media', \Ekko\TEXT_DOMAIN ); ?></div>
 
@@ -146,7 +146,7 @@
 		<div class="navbar-inner">
 			<div class="container">
 				<div class="pull-left section-toggle" title="<?php esc_attr_e( 'click to toggle', \Ekko\TEXT_DOMAIN ); ?>" ng-click="item.text.active = !item.text.active">
-					<span class="icon-chevron-down"></span>
+					<span ng-class="{'icon-chevron-right':!item.text.active, 'icon-chevron-down':item.text.active}"></span>
 				</div>
 				<div class="brand"><?php esc_html_e( 'Text', \Ekko\TEXT_DOMAIN ); ?></div>
 			</div>
@@ -164,7 +164,7 @@
 		<div class="navbar-inner">
 			<div class="container">
 				<div class="pull-left section-toggle" title="<?php esc_attr_e( 'click to toggle', \Ekko\TEXT_DOMAIN ); ?>" ng-click="question.active = !question.active">
-					<span class="icon-chevron-down"></span>
+					<span ng-class="{'icon-chevron-right':!question.active, 'icon-chevron-down':question.active}"></span>
 				</div>
 				<div class="brand"><?php esc_html_e( 'Multiple Choice', \Ekko\TEXT_DOMAIN ); ?></div>
 

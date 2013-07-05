@@ -1,6 +1,9 @@
 'use strict';
 
 angular.module( 'EkkoApp.controllers', [] )
+	.controller( 'MetaController', [ '$scope', function( $scope ) {
+		
+	} ] )
 	.controller( 'CourseController', [ '$scope', '$location', '$anchorScroll', function( $scope, $location, $anchorScroll ) {
 
 		$scope.sortableOpts = {

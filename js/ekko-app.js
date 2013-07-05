@@ -15,9 +15,3 @@ angular.module('EkkoApp', ['ui', 'ui.bootstrap', 'EkkoApp.controllers', 'EkkoApp
 angular.element(document).ready( function() {
 	angular.bootstrap( document.getElementById( 'poststuff' ), [ 'EkkoApp' ] );
 } );
-
-jQuery( function() {
-	jQuery('#course-metadata').on('shown hidden', function( event ) {
-		jQuery('#show-course-metadata').val( event.type=='shown' ? '1' : '0' );
-	} );
-} );
