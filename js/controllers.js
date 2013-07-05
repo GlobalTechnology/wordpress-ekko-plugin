@@ -4,6 +4,24 @@ angular.module( 'EkkoApp.controllers', [] )
 	.controller( 'MetaController', [ '$scope', function( $scope ) {
 		
 	} ] )
+	.controller( 'CourseCompleteController', [ '$scope', function( $scope ) {
+		var ekko_complete = jQuery( 'input[name="ekko-complete"]' );
+		$scope.complete = angular.fromJson( ekko_complete.val() ) || { message: '' };
+		
+		$scope.ckeditor = {
+			toolbar: [ {
+				items: [ 'Bold', 'Italic', 'Underline' ]
+			}, {
+				items: [ 'Link', 'Unlink' ]
+			}, {
+				items: [ 'Format' ]
+			} ]
+		};
+		
+		$scope.$watch( 'complete', function( value ) {
+			ekko_complete.val( angular.toJson( value, false ) );
+		}, true );
+	} ] )
 	.controller( 'CourseController', [ '$scope', '$location', '$anchorScroll', function( $scope, $location, $anchorScroll ) {
 
 		$scope.sortableOpts = {

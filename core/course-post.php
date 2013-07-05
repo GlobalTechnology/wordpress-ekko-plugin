@@ -5,6 +5,7 @@
 	 * @author Brian Zoetewey <brian.zoetewey@ccci.org>
 	 *
 	 * @property array $lessons
+	 * @property object $complete
 	 * @property string $course_ID
 	 * @property bool $show_metadata
 	 * @property string $description
@@ -25,6 +26,7 @@
 		const COPYRIGHT    = 'ekko-copyright';
 		const METADATA     = 'ekko-toggle-metadata';
 		const RESOURCES    = 'ekko-resources';
+		const COMPLETE     = 'ekko-complete';
 
 		public function __get( $key ) {
 			switch( $key ) {
@@ -33,6 +35,11 @@
 					if( !$lessons || $lessons == '' )
 						$lessons = array();
 					return $lessons;
+				case 'complete':
+					$complete = get_post_meta( $this->ID, self::COMPLETE, true );
+					if( !$complete || $complete == '' )
+						$complete = (object) array( 'message' => '', 'active' => false );
+					return $complete;
 				case 'course_ID':
 					$course_id = get_post_meta( $this->ID, self::COURSE_ID, true );
 					if( $course_id && is_numeric( $course_id ) )
@@ -76,6 +83,9 @@
 			switch( $key ) {
 				case 'lessons':
 					update_post_meta( $this->ID, self::LESSONS, $value );
+					break;
+				case 'complete':
+					update_post_meta( $this->ID, self::COMPLETE, $value );
 					break;
 				case 'course_ID':
 					update_post_meta( $this->ID, self::COURSE_ID, $value );
@@ -196,6 +206,13 @@
 
 						break;
 				}
+			}
+
+			$course_complete = $this->complete;
+			if( $course_complete->message && $course_complete->message != '' ) {
+				$complete = $course->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:complete' ) );
+				$message = $complete->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:message' ) );
+				$message->appendChild( $dom->createCDATASection( $course_complete->message ) );
 			}
 
 			$resources_xml = $course->appendChild( $dom->createElementNS( \Ekko\XMLNS_MANIFEST, 'ekko:resources' ) );

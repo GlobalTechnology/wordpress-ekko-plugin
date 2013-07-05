@@ -133,6 +133,7 @@
 				\Ekko\Core\Metaboxes\CourseCreatorMetabox::singleton(),
 				\Ekko\Core\Metaboxes\BannerMetabox::singleton(),
 				\Ekko\Core\Metaboxes\SaveMetabox::singleton(),
+				\Ekko\Core\Metaboxes\CompleteMetabox::singleton(),
 			);
 		}
 
