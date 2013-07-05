@@ -66,7 +66,7 @@ angular.module('EkkoApp.directives', [])
 			restrict: 'A',
 			replace: true,
 			template: '<div class="switch switch-small" data-on="success" data-off="error" data-off-label="<i class=\'icon-remove\'></i>" data-on-label="<i class=\'icon-ok icon-white\'></i>"><input type="checkbox"></div>',
-			require: '^ngModel',
+			require: 'ngModel',
 			link: function(scope, element, attrs, ngModel) {
 				var bs = null;
 
@@ -83,7 +83,18 @@ angular.module('EkkoApp.directives', [])
 						return;
 					scope.$apply(function() {
 						ngModel.$setViewValue( data.value );
+						if( data.value )
+							scope.$parent.$broadcast( 'ui-switch-change', {scope: scope, value: data.value } );
 					});
+				} );
+				
+				scope.$on( 'ui-switch-change', function( event, value ) {
+					if( scope === value.scope )
+						return;
+					if( bs && ngModel.$viewValue ) {
+						ngModel.$setViewValue( false );
+						bs.bootstrapSwitch('setState', false );
+					}
 				} );
 
 				element.bind('$destroy', function() {

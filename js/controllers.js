@@ -135,4 +135,16 @@ angular.module( 'EkkoApp.controllers', [] )
 		$scope.$on( '$destroy', function() {
 			ekko.media.thumbnail.remove( $scope.media.id );
 		} );
+	} ] )
+	.controller( 'MultipleChoiceQuestionController', [ '$scope', function( $scope ) {
+		$scope.$watch( 'question.options', function( newVal, oldVal ) {
+			var answers = _.where( newVal, { answer: true } );
+			if( answers.length == 0 && newVal.length > 0 ) {
+				_.first( newVal ).answer = true;
+				return;
+			}
+			while( answers.length > 1 ) {
+				answers.pop().answer = false;
+			}
+		}, true );
 	} ] );

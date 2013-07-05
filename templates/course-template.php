@@ -160,7 +160,7 @@
 </script>
 
 <scrip<?php ?>t type="text/ng-template" id="ekko-question-multiple">
-	<div class="navbar ekko-item-pink ekko-question-multiple">
+	<div class="navbar ekko-item-pink ekko-question-multiple" ng-controller="MultipleChoiceQuestionController">
 		<div class="navbar-inner">
 			<div class="container">
 				<div class="pull-left section-toggle" title="<?php esc_attr_e( 'click to toggle', \Ekko\TEXT_DOMAIN ); ?>" ng-click="question.active = !question.active">
