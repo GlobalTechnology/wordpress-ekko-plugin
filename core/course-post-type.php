@@ -61,6 +61,7 @@
 			add_action( 'load-ekko-course_page_ekko-publish', array( &$this, 'check_publish' ), 10, 0 );
 			add_action( 'print_media_templates', array( &$this, 'media_templates' ), 10, 0 );
 			add_action( 'dbx_post_sidebar', array( &$this, 'course_templates' ), 10, 0 );
+            add_action( 'before_delete_post', array( &$this, 'delete_post' ), 10, 1 );
 
 			add_action( 'redirect_post_location', array( &$this, 'redirect_post' ), 10, 2 );
 		}
@@ -170,6 +171,18 @@
 		final public function add_admin_menus() {
 			add_submenu_page( 'edit.php?post_type=ekko-course', __( 'Publish Course to EKKO', \Ekko\TEXT_DOMAIN ), null, 'edit_posts', 'ekko-publish', array( &$this, 'publish_to_ekko' ) );
 		}
+
+        final public function delete_post( $post_id ) {
+            if( get_post_type( $post_id ) == $this->post_type() ) {
+                $post = get_post( $post_id );
+                $course = $this->get_post( $post );
+                $course_id = $course->course_ID;
+                if( $course_id !== false ) {
+                    $hub = \Ekko\Core\Services\Hub::singleton();
+                    $hub->delete_course( $course_id );
+                }
+            }
+        }
 
 		final public function check_publish() {
 			if( ! wp_verify_nonce( $_REQUEST[ '_wpnonce' ], 'ekko-publish_' . $_REQUEST[ 'post' ] ) )

@@ -6,6 +6,7 @@
 		const ENDPOINT_LOGIN           = '%(hub)sauth/login';
 		const ENDPOINT_CREATE_COURSE   = '%(hub)s%(session)s/courses';
 		const ENDPOINT_UPDATE_COURSE   = '%(hub)s%(session)s/courses/course/%(course)s/manifest';
+        const ENDPOINT_DELETE_COURSE   = '%(hub)s%(session)s/courses/course/%(course)s';
 		const ENDPOINT_RESOURCES       = '%(hub)s%(session)s/courses/course/%(course)s/resources';
 		const ENDPOINT_PUBLISH_COURSE  = '%(hub)s%(session)s/courses/course/%(course)s/publish';
 		const ENDPOINT_ENROLLED        = '%(hub)s%(session)s/courses/course/%(course)s/enrolled';
@@ -146,6 +147,24 @@
 				)
 			);
 		}
+
+        public function delete_course( $course_id, $session = null ) {
+            $params = array(
+                'hub' => \Ekko\URI_HUB,
+                'session' => ( $session ) ? $session : $this->get_session(),
+                'course' => $course_id,
+            );
+            $response = wp_remote_request(
+                $this->vnsprintf( self::ENDPOINT_DELETE_COURSE, $params ),
+                array(
+                    'method' => 'DELETE',
+                    'redirection' => 0,
+                    'headers' => array(
+                        'Content-Type' => 'application/xml'
+                    ),
+                )
+            );
+        }
 
 		/**
 		 * Upload a file to a course
