@@ -67,7 +67,9 @@
 		 */
 		public function get_session( $superuser = false ) {
 			$user = ( $superuser ) ?
-				\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_user_by_guid( \Ekko\GUID_SUPER_ADMIN ) :
+				( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
+					\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_user_by_guid( \Ekko\GUID_SUPER_ADMIN ) :
+					\WPGCXPlugin::singleton()->get_user_by_guid( \Ekko\GUID_SUPER_ADMIN ) :
 				wp_get_current_user();
 
 			//Retrieve session from WordPress user meta
@@ -82,7 +84,10 @@
 			//Session was not valid, fetch a new session ID from the Ekko Hub
 			$ticket = ( $superuser ) ?
 				\Ekko\Core\Services\TheKeyOAuth::singleton()->get_ticket( $this->get_service(), \Ekko\OAUTH_REFRESH_TOKEN ) :
-				\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_cas_client()->retrievePT( $this->get_service(), $err_code, $err_msg );
+				( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
+					\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_cas_client()->retrievePT( $this->get_service(), $err_code, $err_msg ) :
+					\WPGCXPlugin::singleton()->cas_client()->retrievePT( $this->get_service(), $err_code, $err_msg );
+
 			$response = wp_remote_post(
 				$this->vnsprintf( self::ENDPOINT_LOGIN, array( 'hub' => \Ekko\URI_HUB ) ),
 				array( 'body' => array( 'ticket' => $ticket ) )
