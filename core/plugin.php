@@ -12,8 +12,8 @@
 		 * @return Plugin
 		 */
 		public static function singleton() {
-			if( !isset( self::$instance ) ) {
-				$class = __CLASS__;
+			if ( ! isset( self::$instance ) ) {
+				$class          = __CLASS__;
 				self::$instance = new $class();
 			}
 			return self::$instance;
@@ -23,7 +23,8 @@
 		 * Prevent cloning of the class
 		 * @internal
 		 */
-		private function __clone() {}
+		private function __clone() {
+		}
 
 		/**
 		 * Constructor
@@ -42,7 +43,7 @@
 			add_action( 'init', array( &$this, 'add_ekko_image_sizes' ), 10, 0 );
 
 			add_action( 'set_user_role', array( &$this, 'user_role_changed' ), 5, 2 );
-			add_action( 'remove_user_from_blog', array( &$this, 'user_removed_from_blog' ), 10, 2);
+			add_action( 'remove_user_from_blog', array( &$this, 'user_removed_from_blog' ), 10, 2 );
 		}
 
 		function user_role_changed( $user_id, $role ) {
@@ -50,18 +51,18 @@
 
 			//Fetch users GUID and bail if GUEST
 			$guid = \GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_user_guid( $user_id );
-			if( $guid == 'GUEST' )
+			if ( $guid == 'GUEST' )
 				return;
 			error_log( "Guid: {$guid}" );
 
 			//Fetch all EKKO courses
 			$courses = CoursePostType::singleton()->get_courses();
-			if( empty( $courses ) )
+			if ( empty( $courses ) )
 				return;
 
 			$session = Services\Hub::singleton()->get_session( true );
-			foreach( $courses as $course ) {
-				if( $course_ID = $course->course_ID ) {
+			foreach ( $courses as $course ) {
+				if ( $course_ID = $course->course_ID ) {
 					error_log( "Adding GUID( {$guid} ) to Cousre( {$course_ID} )" );
 					Services\Hub::singleton()->update_users( $course_ID, array( $guid ), array(), Services\Hub::ENDPOINT_ENROLLED, $session );
 					//Remove guid as admin and re-add if role is administrator
@@ -82,19 +83,19 @@
 
 			//Fetch users GUID and bail if GUEST
 			$guid = \GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_user_guid( $user_id );
-			if( $guid == 'GUEST' )
+			if ( $guid == 'GUEST' )
 				return;
 			error_log( "Guid: {$guid}" );
 
 			//Fetch all EKKO courses
 			$courses = CoursePostType::singleton()->get_courses();
-			if( empty( $courses ) )
+			if ( empty( $courses ) )
 				return;
 
 			$session = Services\Hub::singleton()->get_session( true );
-			foreach( $courses as $course ) {
+			foreach ( $courses as $course ) {
 				error_log( "Course ID: " . $course->course_ID );
-				if( $course_ID = $course->course_ID ) {
+				if ( $course_ID = $course->course_ID ) {
 					error_log( "Removing GUID( {$guid} ) from Cousre( {$course_ID} )" );
 					Services\Hub::singleton()->update_users( $course_ID, array(), array( $guid ), Services\Hub::ENDPOINT_ENROLLED, $session );
 					Services\Hub::singleton()->update_users( $course_ID, array(), array( $guid ), Services\Hub::ENDPOINT_ADMINS, $session );

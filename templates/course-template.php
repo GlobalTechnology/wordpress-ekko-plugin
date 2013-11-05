@@ -1,5 +1,5 @@
 <!-- Angular Templates -->
-<scrip<?php ?>t type="text/ng-template" id="ekko-lesson">
+<script type="text/ng-template" id="ekko-lesson">
 	<div class="ekko-item ekko-lesson ekko-item-blue">
 		<div class="navbar">
 			<div class="navbar-inner item-drag-handle">
@@ -45,9 +45,10 @@
 			</div>
 		</div>
 	</div>
+
 </script>
 
-<scrip<?php ?>t type="text/ng-template" id="ekko-quiz">
+<script type="text/ng-template" id="ekko-quiz">
 	<div class="ekko-item ekko-quiz ekko-item-purple">
 		<div class="navbar">
 			<div class="navbar-inner item-drag-handle">
@@ -91,9 +92,10 @@
 			</div>
 		</div>
 	</div>
+
 </script>
 
-<scrip<?php ?>t type="text/ng-template" id="ekko-asset-media">
+<script type="text/ng-template" id="ekko-asset-media">
 	<div class="navbar ekko-item-green" ng-controller="MediaAssetsController">
 		<div class="navbar-inner">
 			<div class="container">
@@ -118,9 +120,10 @@
 			</div>
 		</div>
 	</div>
+
 </script>
 
-<scrip<?php ?>t type="text/ng-template" id="ekko-asset-media-item">
+<script type="text/ng-template" id="ekko-asset-media-item">
 	<div class="thumbnail">
 		<p class="text-center" ng-switch on="media.type">
 			<span ng-switch-when="image">
@@ -139,9 +142,10 @@
 			<a href class="btn btn-mini btn-danger pull-right" ng-click="$parent.item.media.assets.splice( $index, 1 )"><?php esc_html_e( 'remove', \Ekko\TEXT_DOMAIN ); ?></a>
 		</div>
 	</div>
+
 </script>
 
-<scrip<?php ?>t type="text/ng-template" id="ekko-asset-text">
+<script type="text/ng-template" id="ekko-asset-text">
 	<div class="navbar ekko-item-yellow">
 		<div class="navbar-inner">
 			<div class="container">
@@ -157,9 +161,10 @@
 			</div>
 		</div>
 	</div>
+
 </script>
 
-<scrip<?php ?>t type="text/ng-template" id="ekko-question-multiple">
+<script type="text/ng-template" id="ekko-question-multiple">
 	<div class="navbar ekko-item-pink ekko-question-multiple" ng-controller="MultipleChoiceQuestionController">
 		<div class="navbar-inner">
 			<div class="container">
@@ -216,4 +221,5 @@
 			</div>
 		</div>
 	</div>
+
 </script>

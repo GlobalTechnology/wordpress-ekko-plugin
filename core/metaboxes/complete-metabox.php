@@ -5,13 +5,14 @@
 		const EKKO_COMPLETE = 'ekko-complete';
 
 		final protected function __construct() {
-			$this->id = 'coursecompletediv';
+			$this->id       = 'coursecompletediv';
 			$this->location = self::LOC_STATIC_SIDE;
 		}
 
 		/**
 		 * (non-PHPdoc)
 		 * @see \GTO\Framework\Posts\PostMetabox::display()
+		 *
 		 * @param \Ekko\Core\CoursePost $course
 		 */
 		final public function display( $course, $metabox ) {
@@ -21,7 +22,7 @@
 			<div class="ekko-bootstrap container-fluid">
 
 				<div ng-controller="CourseCompleteController">
-				<!--
+					<!--
 					<div class="row-fluid course-nav">
 						<div class="span12">
 							<h1 class="pull-left"><?php esc_html_e( 'Course Completed', \Ekko\TEXT_DOMAIN ); ?></h1>
@@ -48,12 +49,12 @@
 
 				</div>
 			</div>
-			<?php
+		<?php
 
 		}
 
 		final public function save( $course ) {
-			if( array_key_exists( self::EKKO_COMPLETE, $_POST ) )
+			if ( array_key_exists( self::EKKO_COMPLETE, $_POST ) )
 				$course->complete = json_decode( stripslashes( $_POST[ self::EKKO_COMPLETE ] ) );
 		}
 

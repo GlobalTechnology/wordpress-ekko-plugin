@@ -20,9 +20,9 @@
 		}
 
 		final public function valid() {
-			if( $this->session && $this->expires instanceof \DateTime ) {
+			if ( $this->session && $this->expires instanceof \DateTime ) {
 				$now = new \DateTime( null, new \DateTimeZone( 'UTC' ) );
-				if( $this->expires >= $now )
+				if ( $this->expires >= $now )
 					return true;
 			}
 			return false;

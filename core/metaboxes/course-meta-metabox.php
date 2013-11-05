@@ -3,7 +3,7 @@
 	final class CourseMetaMetabox extends \GTO\Framework\Posts\PostMetabox {
 
 		final protected function __construct() {
-			$this->id = 'ekkocoursemetadiv';
+			$this->id       = 'ekkocoursemetadiv';
 			$this->location = self::LOC_STATIC_AFTER_TITLE;
 		}
 
@@ -12,15 +12,16 @@
 		 * @see \GTO\Framework\Posts\PostMetabox::display()
 		 *
 		 * @param \Ekko\Core\CoursePost $course
-		 * @param array|null $metabox
+		 * @param array|null            $metabox
 		 */
 		final public function display( $course, $metabox ) {
-			?><div class="ekko-bootstrap container-fluid">
-				<div class="row-fluid">
-					<div class="ekko-item" ng-controller="MetaController" ng-init="metadata_active = <?php echo $course->show_metadata ? 'true' : 'false'; ?>" ng-include="'ekko-metadata'"></div>
-				</div>
-				<hr/>
-				<scrip<?php ?>t type="text/ng-template" id="ekko-metadata">
+			?>
+			<div class="ekko-bootstrap container-fluid">
+			<div class="row-fluid">
+				<div class="ekko-item" ng-controller="MetaController" ng-init="metadata_active = <?php echo $course->show_metadata ? 'true' : 'false'; ?>" ng-include="'ekko-metadata'"></div>
+			</div>
+			<hr />
+			<scrip<?php ?>t type="text/ng-template" id="ekko-metadata">
 					<div class="navbar">
 						<div class="navbar-inner">
 							<div class="container">
@@ -62,26 +63,28 @@
 							</div>
 						</div>
 					</div>
-				</script>
+
+			</script>
 			</div><?php
 		}
 
 		/**
 		 * (non-PHPdoc)
 		 * @see \GTO\Framework\Posts\PostMetabox::save()
+		 *
 		 * @param \Ekko\Core\CoursePost $course
 		 */
 		final public function save( $course ) {
 			$course->show_metadata = array_key_exists( 'show-course-metadata', $_POST ) ? false : true;
-			if( array_key_exists( 'description', $_POST ) )
+			if ( array_key_exists( 'description', $_POST ) )
 				$course->description = stripslashes( $_POST[ 'description' ] );
-			if( array_key_exists( 'author_name', $_POST ) )
+			if ( array_key_exists( 'author_name', $_POST ) )
 				$course->author_name = stripslashes( $_POST[ 'author_name' ] );
-			if( array_key_exists( 'author_email', $_POST ) )
+			if ( array_key_exists( 'author_email', $_POST ) )
 				$course->author_email = stripslashes( $_POST[ 'author_email' ] );
-			if( array_key_exists( 'author_url', $_POST ) )
+			if ( array_key_exists( 'author_url', $_POST ) )
 				$course->author_url = stripslashes( $_POST[ 'author_url' ] );
-			if( array_key_exists( 'copyright', $_POST ) )
+			if ( array_key_exists( 'copyright', $_POST ) )
 				$course->copyright = stripslashes( $_POST[ 'copyright' ] );
 		}
 	}

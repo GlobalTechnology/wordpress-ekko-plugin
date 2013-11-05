@@ -3,36 +3,38 @@
 	final class BannerMetabox extends \GTO\Framework\Posts\PostMetabox {
 
 		protected function __construct() {
-			$this->id = 'coursebannerdiv';
+			$this->id       = 'coursebannerdiv';
 			$this->location = self::LOC_STATIC_SIDE;
-			$this->ajax = array(
+			$this->ajax     = array(
 				'ekko-set-course-banner' => array( &$this, 'set_banner_image' ),
 			);
 		}
 
 		public function display( $course, $metabox ) {
-			?><div id="coursebannerdiv" class="ekko-bootstrap container-fluid">
-				<div class="row-fluid">
-					<div class="ekko-item">
-						<div class="navbar ekko-item-green">
-							<div class="navbar-inner">
-								<div class="container">
-									<div class="brand"><?php esc_html_e( 'Banner', \Ekko\TEXT_DOMAIN ); ?></div>
-									<div class="navbar-form pull-right">
-										<div class="btn-group">
-											<a class="btn btn-success" href="#"><i class="icon-picture icon-white"></i> <?php esc_html_e( 'Set Banner', \Ekko\TEXT_DOMAIN ); ?></a>
-										</div>
+			?>
+			<div id="coursebannerdiv" class="ekko-bootstrap container-fluid">
+			<div class="row-fluid">
+				<div class="ekko-item">
+					<div class="navbar ekko-item-green">
+						<div class="navbar-inner">
+							<div class="container">
+								<div class="brand"><?php esc_html_e( 'Banner', \Ekko\TEXT_DOMAIN ); ?></div>
+								<div class="navbar-form pull-right">
+									<div class="btn-group">
+										<a class="btn btn-success" href="#"><i class="icon-picture icon-white"></i> <?php esc_html_e( 'Set Banner', \Ekko\TEXT_DOMAIN ); ?>
+										</a>
 									</div>
 								</div>
 							</div>
-							<div>
-								<div class="well">
-									<?php echo $this->banner_thumbnail_html( $course ); ?>
-								</div>
+						</div>
+						<div>
+							<div class="well">
+								<?php echo $this->banner_thumbnail_html( $course ); ?>
 							</div>
 						</div>
 					</div>
 				</div>
+			</div>
 			</div><?php
 		}
 
@@ -40,7 +42,7 @@
 			$post_ID = intval( $_POST[ 'post_id' ] );
 
 			if ( ! current_user_can( 'edit_post', $post_ID ) )
-				wp_die( -1 );
+				wp_die( - 1 );
 
 			$banner_id = intval( $_POST[ 'banner_id' ] );
 
@@ -62,10 +64,10 @@
 		}
 
 		private function banner_thumbnail_html( $course ) {
-			$banner_id = (int) get_post_thumbnail_id( $course->ID );
-			if( $banner_id > 0 ) {
+			$banner_id = (int)get_post_thumbnail_id( $course->ID );
+			if ( $banner_id > 0 ) {
 				$banner_html = wp_get_attachment_image( $banner_id, 'ekko-banner-thumbnail' );
-				if( $banner_html )
+				if ( $banner_html )
 					return $banner_html;
 			}
 			return '<img width="240" height="135" src="' . \Ekko\PLUGIN_URL . 'images/default-banner.png" class="attachment-ekko-banner-thumbnail" />';
