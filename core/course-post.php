@@ -14,6 +14,7 @@
 	 * @property string $author_email
 	 * @property string $author_url
 	 * @property array  $resources
+	 * @property object $enrollment
 	 */
 	final class CoursePost extends \GTO\Framework\Posts\Post {
 
@@ -27,6 +28,12 @@
 		const METADATA     = 'ekko-toggle-metadata';
 		const RESOURCES    = 'ekko-resources';
 		const COMPLETE     = 'ekko-complete';
+		const ENROLLMENT   = 'ekko-enrollment';
+
+		const ENROLLMENT_PUBLIC   = 'public';
+		const ENROLLMENT_OPEN     = 'open';
+		const ENROLLMENT_APPROVAL = 'approval';
+		const ENROLLMENT_MANAGED  = 'managed';
 
 		public function __get( $key ) {
 			switch ( $key ) {
@@ -74,6 +81,11 @@
 					if ( ! $resources || ! is_array( $resources ) )
 						return array();
 					return $resources;
+				case 'enrollment':
+					$enrollment = get_post_meta( $this->ID, self::ENROLLMENT, true );
+					if ( ! $enrollment || $enrollment == '' )
+						$enrollment = (object)array( 'active' => true, 'type' => 'open' );
+					return $enrollment;
 				default:
 					return parent::__get( $key );
 			}
@@ -110,6 +122,9 @@
 					break;
 				case 'resources':
 					update_post_meta( $this->ID, self::RESOURCES, $value );
+					break;
+				case 'enrollment':
+					update_post_meta( $this->ID, self::ENROLLMENT, $value );
 					break;
 				default:
 					parent::__set( $key, $value );

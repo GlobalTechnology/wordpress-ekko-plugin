@@ -22,6 +22,14 @@ angular.module( 'EkkoApp.controllers', [] )
 			ekko_complete.val( angular.toJson( value, false ) );
 		}, true );
 	} ] )
+	.controller( 'EnrollmentController', [ '$scope', function( $scope ) {
+			var ekko_enrollment = jQuery( 'input[name="ekko-enrollment"]' );
+			$scope.enrollment = angular.fromJson( ekko_enrollment.val() ) || { type: 'open' };
+
+			$scope.$watch( 'enrollment', function( value ) {
+				ekko_enrollment.val( angular.toJson( value, false ) );
+			}, true );
+	} ] )
 	.controller( 'CourseController', [ '$scope', '$location', '$anchorScroll', function( $scope, $location, $anchorScroll ) {
 
 		$scope.sortableOpts = {

@@ -11,6 +11,7 @@
 		const ENDPOINT_PUBLISH_COURSE = '%(hub)s%(session)s/courses/course/%(course)s/publish';
 		const ENDPOINT_ENROLLED       = '%(hub)s%(session)s/courses/course/%(course)s/enrolled';
 		const ENDPOINT_ADMINS         = '%(hub)s%(session)s/courses/course/%(course)s/admins';
+		const ENDPOINT_SETTINGS       = '%(hub)s%(session)s/courses/course/%(course)s/settings.json';
 
 		const META_SESSION = 'ekko-hub-session';
 
@@ -291,7 +292,67 @@
 		}
 
 		/**
-		 * Get a list of user guid from the specified endpoint
+		 * Get Course Settings
+		 *
+		 * @param int         $course_id
+		 * @param string|null $session
+		 *
+		 * @return object|false
+		 */
+		public function get_settings( $course_id, $session = null ) {
+			$params   = array(
+				'hub'     => \Ekko\URI_HUB,
+				'session' => ( $session ) ? $session : $this->get_session(),
+				'course'  => $course_id,
+			);
+			$response = wp_remote_get(
+				$this->vnsprintf( self::ENDPOINT_SETTINGS, $params ),
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Content-Type' => 'application/json'
+					),
+				)
+			);
+			if ( $response && array_key_exists( 'body', $response ) ) {
+				return json_decode( $response[ 'body' ] );
+			}
+			return false;
+		}
+
+		/**
+		 * Update Course Settings
+		 *
+		 * @param int         $course_id
+		 * @param array       $settings
+		 * @param string|null $session
+		 *
+		 * @return object|false
+		 */
+		public function update_settings( $course_id, $settings, $session = null ) {
+			$params   = array(
+				'hub'     => \Ekko\URI_HUB,
+				'session' => ( $session ) ? $session : $this->get_session(),
+				'course'  => $course_id,
+			);
+			$response = wp_remote_post(
+				$this->vnsprintf( self::ENDPOINT_SETTINGS, $params ),
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Content-Type' => 'application/x-www-form-urlencoded'
+					),
+					'body'        => $settings,
+				)
+			);
+			if ( $response && array_key_exists( 'body', $response ) ) {
+				return json_decode( $response[ 'body' ] );
+			}
+			return false;
+		}
+
+		/**
+		 * Get a list of GUID from the specified endpoint
 		 *
 		 * @param int         $course_id
 		 * @param string      $endpoint

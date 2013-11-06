@@ -134,6 +134,7 @@
 				\Ekko\Core\Metaboxes\CourseMetaMetabox::singleton(),
 				\Ekko\Core\Metaboxes\CourseCreatorMetabox::singleton(),
 				\Ekko\Core\Metaboxes\BannerMetabox::singleton(),
+				\Ekko\Core\Metaboxes\EnrollmentMetabox::singleton(),
 				\Ekko\Core\Metaboxes\SaveMetabox::singleton(),
 				\Ekko\Core\Metaboxes\CompleteMetabox::singleton(),
 			);
@@ -229,6 +230,24 @@
 			}
 			else
 				echo '<p><strong>' . esc_html__( 'Course successfully published!', \Ekko\TEXT_DOMAIN ) . '</strong></p>';
+
+			$settings = array( 'public' => 'true', 'enrollmentType' => '' );
+			switch( $course->enrollment->type ) {
+				case $course::ENROLLMENT_PUBLIC:
+					$settings[ 'enrollmentType' ] = 'disabled';
+					break;
+				case $course::ENROLLMENT_OPEN:
+					$settings[ 'enrollmentType' ] = 'open';
+					break;
+				case $course::ENROLLMENT_APPROVAL:
+					$settings[ 'enrollmentType' ] = 'approval';
+					break;
+				case $course::ENROLLMENT_MANAGED:
+					$settings[ 'public' ] = 'false';
+					$settings[ 'enrollmentType' ] = 'approval';
+					break;
+			}
+			$hub->update_settings( $course_id, $settings );
 
 			$admins = array();
 			$users  = array();
