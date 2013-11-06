@@ -250,18 +250,14 @@
 			$hub->update_settings( $course_id, $settings );
 
 			$admins = array();
-			$users  = array();
 			foreach ( get_users() as $user ) {
 				$class = ( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
 					\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton() : \WPGCXPlugin::singleton();
 				$guid  = $class->get_user_guid( $user );
 				if ( $user->has_cap( 'administrator' ) )
 					$admins[ ] = $guid;
-				else
-					$users[ ] = $guid;
 			}
 			$hub->sync_admins( $course_id, $admins );
-			$hub->sync_enrolled( $course_id, $users );
 
 			?>
 			<a href="<?php echo admin_url( 'edit.php?post_type=ekko-course' ); ?>"><?php esc_html__( 'Return to Courses page', \Ekko\TEXT_DOMAIN ); ?></a><?php

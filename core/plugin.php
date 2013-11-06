@@ -47,13 +47,12 @@
 		}
 
 		function user_role_changed( $user_id, $role ) {
-			error_log( "User ({$user_id}) Role Changed: {$role}" );
-
 			//Fetch users GUID and bail if GUEST
-			$guid = \GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_user_guid( $user_id );
+			$CAS = ( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
+				\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton() : \WPGCXPlugin::singleton();
+			$guid = $CAS->get_user_guid( $user_id );
 			if ( $guid == 'GUEST' )
 				return;
-			error_log( "Guid: {$guid}" );
 
 			//Fetch all EKKO courses
 			$courses = CoursePostType::singleton()->get_courses();
@@ -63,8 +62,6 @@
 			$session = Services\Hub::singleton()->get_session( true );
 			foreach ( $courses as $course ) {
 				if ( $course_ID = $course->course_ID ) {
-					error_log( "Adding GUID( {$guid} ) to Cousre( {$course_ID} )" );
-					Services\Hub::singleton()->update_users( $course_ID, array( $guid ), array(), Services\Hub::ENDPOINT_ENROLLED, $session );
 					//Remove guid as admin and re-add if role is administrator
 					Services\Hub::singleton()->update_users(
 						$course_ID,
@@ -74,18 +71,16 @@
 						$session
 					);
 				}
-
 			}
 		}
 
 		function user_removed_from_blog( $user_id, $blog_id ) {
-			error_log( "User ({$user_id}) Removed from Blog: {$blog_id}" );
-
 			//Fetch users GUID and bail if GUEST
-			$guid = \GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_user_guid( $user_id );
+			$CAS = ( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
+				\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton() : \WPGCXPlugin::singleton();
+			$guid = $CAS->get_user_guid( $user_id );
 			if ( $guid == 'GUEST' )
 				return;
-			error_log( "Guid: {$guid}" );
 
 			//Fetch all EKKO courses
 			$courses = CoursePostType::singleton()->get_courses();
@@ -96,8 +91,6 @@
 			foreach ( $courses as $course ) {
 				error_log( "Course ID: " . $course->course_ID );
 				if ( $course_ID = $course->course_ID ) {
-					error_log( "Removing GUID( {$guid} ) from Cousre( {$course_ID} )" );
-					Services\Hub::singleton()->update_users( $course_ID, array(), array( $guid ), Services\Hub::ENDPOINT_ENROLLED, $session );
 					Services\Hub::singleton()->update_users( $course_ID, array(), array( $guid ), Services\Hub::ENDPOINT_ADMINS, $session );
 				}
 			}
