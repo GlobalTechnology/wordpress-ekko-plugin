@@ -15,11 +15,11 @@
 		 * Returns the subclass singleton.
 		 * @final
 		 * @return Singleton
-		*/
+		 */
 		public static function singleton() {
 			$class = get_called_class();
 
-			if( !isset( self::$instances[ $class ] ) )
+			if ( ! isset( self::$instances[ $class ] ) )
 				self::$instances[ $class ] = new $class();
 
 			return self::$instances[ $class ];
@@ -28,7 +28,8 @@
 		/**
 		 * Do not allow object cloning
 		 */
-		final private function __clone() {}
+		final private function __clone() {
+		}
 
 		/**
 		 * Constructor

@@ -4,8 +4,8 @@
 	 * WordPress WP_Post composite class
 	 * @author Brian Zoetewey <brian.zoetewey@ccci.org>
 	 *
-	 * @property int $ID
-	 * @property int $post_author
+	 * @property int    $ID
+	 * @property int    $post_author
 	 * @property string $post_date
 	 * @property string $post_date_gmt
 	 * @property string $post_content
@@ -21,12 +21,12 @@
 	 * @property string $post_modified
 	 * @property string $post_modified_gmt
 	 * @property string $post_content_filtered
-	 * @property int $post_parent
+	 * @property int    $post_parent
 	 * @property string $guid
-	 * @property int $menu_order
+	 * @property int    $menu_order
 	 * @property string $post_type
 	 * @property string $post_mime_type
-	 * @property int $comment_count
+	 * @property int    $comment_count
 	 */
 	class Post {
 		/**

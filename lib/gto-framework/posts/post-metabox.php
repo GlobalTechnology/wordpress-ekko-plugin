@@ -94,14 +94,15 @@
 
 		/**
 		 * @param \GTO\Framework\Posts\Post $post
-		 * @param array $metabox
+		 * @param array                     $metabox
 		 */
 		abstract public function display( $post, $metabox );
 
 		/**
 		 * @param \GTO\Framework\Posts\Post $post
 		 */
-		public function save( $post ) {}
+		public function save( $post ) {
+		}
 	}
 
 }
