@@ -1,7 +1,11 @@
 <?php namespace Ekko\Core {
 
+	/**
+	 * Class CoursePostType
+	 * @package Ekko\Core
+	 * @method static \Ekko\Core\CoursePostType singleton()
+	 */
 	final class CoursePostType extends \GTO\Framework\Posts\PostType {
-
 		protected $post_type = 'ekko-course';
 
 		protected $remove_featured_image_metabox = true;
@@ -10,6 +14,11 @@
 			return new \Ekko\Core\CoursePost( $post );
 		}
 
+		/**
+		 * @param $post
+		 *
+		 * @return CoursePost|null
+		 */
 		final public function get_course( $post ) {
 			$post = get_post( $post );
 			if ( $post instanceof \WP_Post && get_post_type( $post ) == $this->post_type() )
@@ -57,9 +66,7 @@
 		}
 
 		final protected function register_hooks() {
-			add_action( 'post_row_actions', array( &$this, 'post_row_actions' ), 10, 2 );
-			add_action( 'admin_menu', array( &$this, 'add_admin_menus' ), 10, 0 );
-			add_action( 'load-ekko-course_page_ekko-publish', array( &$this, 'check_publish' ), 10, 0 );
+			add_action( 'admin_menu', array( '\Ekko\Core\Pages\PublishPage', 'singleton' ), 10, 0 );
 			add_action( 'print_media_templates', array( &$this, 'media_templates' ), 10, 0 );
 			add_action( 'dbx_post_sidebar', array( &$this, 'course_templates' ), 10, 0 );
 			add_action( 'before_delete_post', array( &$this, 'delete_post' ), 10, 1 );
@@ -154,24 +161,8 @@
 					$location = remove_query_arg( 'message', $location );
 					return add_query_arg( 'message', 4, $location );
 				}
-				elseif ( isset( $_POST[ 'publish' ] ) ) {
-					return admin_url( sprintf( 'edit.php?post=%d&post_type=%s&page=ekko-publish&_wpnonce=%s', $post_id, $this->post_type(), wp_create_nonce( 'ekko-publish_' . $post_id ) ) );
-				}
 			}
 			return $location;
-		}
-
-		final public function post_row_actions( $actions, $post ) {
-			if ( get_post_type( $post ) == $this->post_type() ) {
-				if ( array_key_exists( 'inline hide-if-no-js', $actions ) )
-					unset( $actions[ 'inline hide-if-no-js' ] );
-				$actions[ 'ekko-publish' ] = "<a class='ekko-publish' title='" . esc_attr__( 'Publish to Ekko', \Ekko\TEXT_DOMAIN ) . "' href='" . wp_nonce_url( admin_url( sprintf( 'edit.php?post=%d&amp;post_type=%s&amp;page=ekko-publish', $post->ID, $this->post_type() ) ), 'ekko-publish_' . $post->ID ) . "'>" . __( 'Publish to Ekko', \Ekko\TEXT_DOMAIN ) . "</a>";
-			}
-			return $actions;
-		}
-
-		final public function add_admin_menus() {
-			add_submenu_page( 'edit.php?post_type=ekko-course', __( 'Publish Course to EKKO', \Ekko\TEXT_DOMAIN ), null, 'edit_posts', 'ekko-publish', array( &$this, 'publish_to_ekko' ) );
 		}
 
 		final public function delete_post( $post_id ) {
@@ -185,83 +176,5 @@
 				}
 			}
 		}
-
-		final public function check_publish() {
-			if ( ! wp_verify_nonce( $_REQUEST[ '_wpnonce' ], 'ekko-publish_' . $_REQUEST[ 'post' ] ) )
-				wp_die( __( 'Cheatin&#8217; uh?', \Ekko\TEXT_DOMAIN ) );
-		}
-
-		final public function publish_to_ekko() {
-			echo '<div class="wrap"><div id="icon-post" class="icon32"><br></div><h2>' . esc_html__( 'Publishing Course to EKKO', \Ekko\TEXT_DOMAIN ) . '</h2></div>';
-			$post   = get_post( $_REQUEST[ 'post' ] );
-			$course = $this->get_post( $post );
-			echo sprintf( '<h4>%2$s: %1$s</h4>', $course->post_title, esc_html__( 'Publishing', \Ekko\TEXT_DOMAIN ) );
-
-			$hub       = \Ekko\Core\Services\Hub::singleton();
-			$course_id = $course->course_ID;
-
-			if ( $course_id === false )
-				$course_id = $hub->create_course( $course->get_manifest() );
-			else
-				$hub->update_course( $course_id, $course->get_manifest() );
-			echo sprintf( '<p>%1$s</p>', esc_html__( 'Course manifest updated', \Ekko\TEXT_DOMAIN ) );
-			$course->course_ID = $course_id;
-
-			$existing_resources = $hub->get_resources( $course_id );
-			$resources          = $course->resources;
-			echo '<p>' . esc_html__( 'Uploading Media', \Ekko\TEXT_DOMAIN ) . ':<ul>';
-			foreach ( $resources as $resource ) {
-				if ( $resource->type == 'file' ) {
-					echo sprintf( '<li>%1$s</li>', basename( $resource->file ) );
-					if ( in_array( $resource->sha1, $existing_resources ) )
-						continue;
-					$hub->upload_resource( $course_id, $resource->file, $resource->mimeType );
-				}
-			}
-			echo '</ul></p>';
-
-			$result = $hub->publish_course( $course_id );
-			if ( $result !== true ) {
-				echo '<p><strong>' . esc_html__( 'One or more Errors occured during publish', \Ekko\TEXT_DOMAIN ) . ':</strong>';
-				if ( is_array( $result ) )
-					foreach ( $result as $error )
-						echo '<div>' . esc_html( $error ) . '</div>';
-				echo '</p>';
-			}
-			else
-				echo '<p><strong>' . esc_html__( 'Course successfully published!', \Ekko\TEXT_DOMAIN ) . '</strong></p>';
-
-			$settings = array( 'public' => 'true', 'enrollmentType' => '' );
-			switch( $course->enrollment->type ) {
-				case $course::ENROLLMENT_PUBLIC:
-					$settings[ 'enrollmentType' ] = 'disabled';
-					break;
-				case $course::ENROLLMENT_OPEN:
-					$settings[ 'enrollmentType' ] = 'open';
-					break;
-				case $course::ENROLLMENT_APPROVAL:
-					$settings[ 'enrollmentType' ] = 'approval';
-					break;
-				case $course::ENROLLMENT_MANAGED:
-					$settings[ 'public' ] = 'false';
-					$settings[ 'enrollmentType' ] = 'approval';
-					break;
-			}
-			$hub->update_settings( $course_id, $settings );
-
-			$admins = array();
-			foreach ( get_users() as $user ) {
-				$class = ( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
-					\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton() : \WPGCXPlugin::singleton();
-				$guid  = $class->get_user_guid( $user );
-				if ( $user->has_cap( 'administrator' ) )
-					$admins[ ] = $guid;
-			}
-			$hub->sync_admins( $course_id, $admins );
-
-			?>
-			<a href="<?php echo admin_url( 'edit.php?post_type=ekko-course' ); ?>"><?php esc_html__( 'Return to Courses page', \Ekko\TEXT_DOMAIN ); ?></a><?php
-		}
-
 	}
 }
