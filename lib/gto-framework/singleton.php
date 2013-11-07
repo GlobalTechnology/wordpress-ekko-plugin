@@ -13,9 +13,10 @@
 
 		/**
 		 * Returns the subclass singleton.
+		 * @final
 		 * @return Singleton
 		*/
-		final public static function singleton() {
+		public static function singleton() {
 			$class = get_called_class();
 
 			if( !isset( self::$instances[ $class ] ) )
