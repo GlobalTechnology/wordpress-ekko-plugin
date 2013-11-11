@@ -83,24 +83,6 @@
 			else
 				echo '<p><strong>' . esc_html__( 'Course successfully published!', \Ekko\TEXT_DOMAIN ) . '</strong></p>';
 
-			$settings = array( 'public' => 'true', 'enrollmentType' => '' );
-			switch ( $course->enrollment->type ) {
-				case $course::ENROLLMENT_PUBLIC:
-					$settings[ 'enrollmentType' ] = 'disabled';
-					break;
-				case $course::ENROLLMENT_OPEN:
-					$settings[ 'enrollmentType' ] = 'open';
-					break;
-				case $course::ENROLLMENT_APPROVAL:
-					$settings[ 'enrollmentType' ] = 'approval';
-					break;
-				case $course::ENROLLMENT_MANAGED:
-					$settings[ 'public' ]         = 'false';
-					$settings[ 'enrollmentType' ] = 'approval';
-					break;
-			}
-			$hub->update_settings( $course_id, $settings );
-
 			$admins = array();
 			foreach ( get_users() as $user ) {
 				$class = ( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?

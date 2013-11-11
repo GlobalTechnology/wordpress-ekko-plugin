@@ -6,10 +6,16 @@
 	 * @method static \Ekko\Core\CoursePostType singleton()
 	 */
 	final class CoursePostType extends \GTO\Framework\Posts\PostType {
+
 		protected $post_type = 'ekko-course';
 
 		protected $remove_featured_image_metabox = true;
 
+		/**
+		 * @param \WP_Post $post
+		 *
+		 * @return CoursePost|\GTO\Framework\Posts\Post
+		 */
 		final protected function get_post( \WP_Post $post ) {
 			return new \Ekko\Core\CoursePost( $post );
 		}
@@ -67,9 +73,13 @@
 
 		final protected function register_hooks() {
 			add_action( 'admin_menu', array( '\Ekko\Core\Pages\PublishPage', 'singleton' ), 10, 0 );
+			add_action( 'admin_menu', array( '\Ekko\Core\Pages\EnrollmentPage', 'singleton' ), 10, 0 );
 			add_action( 'print_media_templates', array( &$this, 'media_templates' ), 10, 0 );
 			add_action( 'dbx_post_sidebar', array( &$this, 'course_templates' ), 10, 0 );
 			add_action( 'before_delete_post', array( &$this, 'delete_post' ), 10, 1 );
+
+			add_filter( "manage_{$this->post_type()}_posts_columns", array( &$this, 'manage_posts_columns' ), 10, 1 );
+			add_action( "manage_{$this->post_type()}_posts_custom_column", array( &$this, 'manage_posts_custom_column' ), 10, 2 );
 
 			add_action( 'redirect_post_location', array( &$this, 'redirect_post' ), 10, 2 );
 		}
@@ -136,12 +146,54 @@
 			}
 		}
 
+		/**
+		 * @param array $posts_columns
+		 *
+		 * @return array
+		 */
+		final public function manage_posts_columns( array $posts_columns ) {
+			$columns = array();
+			foreach ( $posts_columns as $name => $value ) {
+				if ( $name == 'title' ) {
+					$columns[ $name ]     = $value;
+					$columns[ 'lessons' ] = __( 'Lessons', \Ekko\TEXT_DOMAIN );
+					$columns[ 'quizzes' ] = __( 'Quizzes', \Ekko\TEXT_DOMAIN );
+				}
+				else
+					$columns[ $name ] = $value;
+			}
+			return $columns;
+		}
+
+		/**
+		 * @param string $column_name
+		 * @param int    $post_id
+		 */
+		final public function manage_posts_custom_column( $column_name, $post_id ) {
+			$course = $this->get_course( $post_id );
+			if ( $column_name == 'lessons' ) {
+				$count = 0;
+				foreach ( $course->lessons as $item ) {
+					if ( $item->type == 'lesson' )
+						$count ++;
+				}
+				echo $count;
+			}
+			elseif ( $column_name == 'quizzes' ) {
+				$count = 0;
+				foreach ( $course->lessons as $item ) {
+					if ( $item->type == 'quiz' )
+						$count ++;
+				}
+				echo $count;
+			}
+		}
+
 		protected function metaboxes() {
 			return array(
 				\Ekko\Core\Metaboxes\CourseMetaMetabox::singleton(),
 				\Ekko\Core\Metaboxes\CourseCreatorMetabox::singleton(),
 				\Ekko\Core\Metaboxes\BannerMetabox::singleton(),
-				\Ekko\Core\Metaboxes\EnrollmentMetabox::singleton(),
 				\Ekko\Core\Metaboxes\SaveMetabox::singleton(),
 				\Ekko\Core\Metaboxes\CompleteMetabox::singleton(),
 			);

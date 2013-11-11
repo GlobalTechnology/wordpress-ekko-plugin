@@ -72,9 +72,7 @@
 		 */
 		public function get_session( $superuser = false ) {
 			$user = ( $superuser ) ?
-				( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
-					\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_user_by_guid( \Ekko\GUID_SUPER_ADMIN ) :
-					\WPGCXPlugin::singleton()->get_user_by_guid( \Ekko\GUID_SUPER_ADMIN ) :
+				\Ekko\Core\Services\TheKey::singleton()->get_user_by_guid( \Ekko\GUID_SUPER_ADMIN ) :
 				wp_get_current_user();
 
 			//Retrieve session from WordPress user meta
@@ -90,10 +88,8 @@
 			$err_code = null;
 			$err_msg  = null;
 			$ticket   = ( $superuser ) ?
-				\Ekko\Core\Services\TheKeyOAuth::singleton()->get_ticket( $this->get_service(), \Ekko\OAUTH_REFRESH_TOKEN ) :
-				( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
-					\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_cas_client()->retrievePT( $this->get_service(), $err_code, $err_msg ) :
-					\WPGCXPlugin::singleton()->cas_client()->retrievePT( $this->get_service(), $err_code, $err_msg );
+				\Ekko\Core\Services\TheKey::singleton()->get_ticket( $this->get_service(), \Ekko\OAUTH_REFRESH_TOKEN ) :
+				\Ekko\Core\Services\TheKey::singleton()->cas_client()->retrievePT( $this->get_service(), $err_code, $err_msg );
 
 			$response = wp_remote_post(
 				$this->vnsprintf( self::ENDPOINT_LOGIN, array( 'hub' => \Ekko\URI_HUB ) ),
@@ -324,7 +320,7 @@
 		 * Update Course Settings
 		 *
 		 * @param int         $course_id
-		 * @param array       $settings
+		 * @param object      $settings
 		 * @param string|null $session
 		 *
 		 * @return object|false
@@ -371,14 +367,15 @@
 				array(
 					'redirection' => 0,
 					'headers'     => array(
-						'Content-Type' => 'application/xml'
+						'Content-Type' => 'application/xml',
+						'Accept'       => 'application/xml',
 					),
 				)
 			);
 			$users    = array();
 			if ( $dom = $this->parse_xml_to_domdoc( $response[ 'body' ] ) ) {
 				$xpath = $this->xpath_parser( $dom );
-				foreach ( $xpath->query( '/hub:admins/hub:user/@guid' ) as $guid ) {
+				foreach ( $xpath->query( '/hub:users/hub:user/@guid' ) as $guid ) {
 					$users[ ] = strtolower( $guid->value );
 				}
 			}

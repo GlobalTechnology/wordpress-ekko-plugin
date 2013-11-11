@@ -1,5 +1,11 @@
 <?php namespace GTO\Framework\Posts {
 
+	/**
+	 * Class PostType
+	 * @package GTO\Framework\Posts
+	 *
+	 * @method static \GTO\Framework\Posts\PostType singleton()
+	 */
 	abstract class PostType extends \GTO\Framework\Singleton {
 
 		/****************************
@@ -13,7 +19,7 @@
 		protected $post_type = '';
 
 		/**
-		 * Hide the Permlink on the edit post screen
+		 * Hide the Permalink on the edit post screen
 		 * @var bool
 		 */
 		protected $hide_permalink = true;
@@ -159,6 +165,10 @@
 			}
 		}
 
+		/**
+		 * Display metabox in static post areas
+		 * @internal
+		 */
 		final public function _do_static_meta_box() {
 			$location = array_search( current_filter(), \GTO\Framework\Posts\PostMetabox::$LOCATION_ACTION_MAP, true );
 			if ( $location !== false ) {
@@ -214,6 +224,10 @@
 			}
 		}
 
+		/**
+		 * Register additional metabox admin actions/filters
+		 * @internal
+		 */
 		final public function _admin_init() {
 			foreach ( $this->metaboxes() as $metabox ) {
 				foreach ( $metabox->ajax as $action => $callback ) {
@@ -310,7 +324,7 @@
 		/**
 		 * Post Saved
 		 *
-		 * @param \WP_Post $post
+		 * @param \GTO\Framework\Posts\Post $post
 		 */
 		protected function save_post( \GTO\Framework\Posts\Post $post ) {
 		}
