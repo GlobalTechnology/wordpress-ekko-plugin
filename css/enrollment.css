@@ -1,0 +1,9 @@
+@CHARSET "UTF-8";
+
+.form-field input[type="radio"] {
+	width: inherit;
+}
+
+.form-field label p {
+	margin-left: 15px;
+}
