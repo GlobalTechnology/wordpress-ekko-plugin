@@ -4,16 +4,18 @@
 	 * Ekko Course composite post class
 	 * @author Brian Zoetewey <brian.zoetewey@ccci.org>
 	 *
-	 * @property array  $lessons
-	 * @property object $complete
-	 * @property string $course_ID
-	 * @property bool   $show_metadata
-	 * @property string $description
-	 * @property string $copyright
-	 * @property string $author_name
-	 * @property string $author_email
-	 * @property string $author_url
-	 * @property array  $resources
+	 * @property array      $lessons
+	 * @property object     $complete
+	 * @property string     $course_ID
+	 * @property bool       $show_metadata
+	 * @property string     $description
+	 * @property string     $copyright
+	 * @property string     $author_name
+	 * @property string     $author_email
+	 * @property string     $author_url
+	 * @property array      $resources
+	 * @property string     $enrollment_type
+	 * @property-read array $enrolled_users
 	 */
 	final class CoursePost extends \GTO\Framework\Posts\Post {
 
@@ -27,6 +29,12 @@
 		const METADATA     = 'ekko-toggle-metadata';
 		const RESOURCES    = 'ekko-resources';
 		const COMPLETE     = 'ekko-complete';
+		const ENROLLMENT   = 'ekko-enrollment';
+
+		const ENROLLMENT_PUBLIC   = 'public';
+		const ENROLLMENT_OPEN     = 'open';
+		const ENROLLMENT_APPROVAL = 'approval';
+		const ENROLLMENT_MANAGED  = 'managed';
 
 		public function __get( $key ) {
 			switch ( $key ) {
@@ -74,6 +82,18 @@
 					if ( ! $resources || ! is_array( $resources ) )
 						return array();
 					return $resources;
+				case 'enrollment_type':
+					$enrollment_type = get_post_meta( $this->ID, self::ENROLLMENT, true );
+					if ( ! $enrollment_type || $enrollment_type == '' || is_object( $enrollment_type ) )
+						$enrollment_type = self::ENROLLMENT_OPEN;
+					return $enrollment_type;
+				case 'enrolled_users':
+					$users = $this->get_transient( 'enrolled_users' );
+					if ( ! $users ) {
+						$users = \Ekko\Core\Services\Hub::singleton()->get_enrolled( $this->course_ID );
+						$this->set_transient( 'enrolled_users', $users, 15 * MINUTE_IN_SECONDS );
+					}
+					return $users;
 				default:
 					return parent::__get( $key );
 			}
@@ -111,9 +131,64 @@
 				case 'resources':
 					update_post_meta( $this->ID, self::RESOURCES, $value );
 					break;
+				case 'enrollment_type':
+					update_post_meta( $this->ID, self::ENROLLMENT, $value );
+					break;
 				default:
 					parent::__set( $key, $value );
 			}
+		}
+
+		final public function is_published() {
+			return $this->course_ID !== false;
+		}
+
+
+		/**
+		 * @param object $settings
+		 *
+		 * @return string
+		 */
+		final static public function settings_to_enrollment_type( $settings ) {
+			if( $settings->public === true ) {
+				if( $settings->enrollmentType == 'disabled' )
+					$enrollment_type = self::ENROLLMENT_PUBLIC;
+				elseif( $settings->enrollmentType == 'approval' )
+					$enrollment_type = self::ENROLLMENT_APPROVAL;
+				elseif( $settings->enrollmentType == 'open' )
+					$enrollment_type = self::ENROLLMENT_OPEN;
+			}
+			elseif( $settings->enrollmentType == 'approval' )
+				$enrollment_type = self::ENROLLMENT_MANAGED;
+			else
+				$enrollment_type = self::ENROLLMENT_OPEN;
+			return $enrollment_type;
+		}
+
+		/**
+		 * @param string $enrollment_type
+		 *
+		 * @return object
+		 */
+		final static public function enrollment_type_to_settings( $enrollment_type ) {
+			$settings = array( 'public' => 'true', 'enrollmentType' => '' );
+			switch ( $enrollment_type ) {
+				case self::ENROLLMENT_PUBLIC:
+					$settings[ 'enrollmentType' ] = 'disabled';
+					break;
+				case self::ENROLLMENT_APPROVAL:
+					$settings[ 'enrollmentType' ] = 'approval';
+					break;
+				case self::ENROLLMENT_MANAGED:
+					$settings[ 'public' ]         = 'false';
+					$settings[ 'enrollmentType' ] = 'approval';
+					break;
+				case self::ENROLLMENT_OPEN:
+				default:
+					$settings[ 'enrollmentType' ] = 'open';
+					break;
+			}
+			return (object)$settings;
 		}
 
 		private $resource_map;

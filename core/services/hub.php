@@ -11,6 +11,7 @@
 		const ENDPOINT_PUBLISH_COURSE = '%(hub)s%(session)s/courses/course/%(course)s/publish';
 		const ENDPOINT_ENROLLED       = '%(hub)s%(session)s/courses/course/%(course)s/enrolled';
 		const ENDPOINT_ADMINS         = '%(hub)s%(session)s/courses/course/%(course)s/admins';
+		const ENDPOINT_SETTINGS       = '%(hub)s%(session)s/courses/course/%(course)s/settings.json';
 
 		const META_SESSION = 'ekko-hub-session';
 
@@ -71,9 +72,7 @@
 		 */
 		public function get_session( $superuser = false ) {
 			$user = ( $superuser ) ?
-				( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
-					\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_user_by_guid( \Ekko\GUID_SUPER_ADMIN ) :
-					\WPGCXPlugin::singleton()->get_user_by_guid( \Ekko\GUID_SUPER_ADMIN ) :
+				\Ekko\Core\Services\TheKey::singleton()->get_user_by_guid( \Ekko\GUID_SUPER_ADMIN ) :
 				wp_get_current_user();
 
 			//Retrieve session from WordPress user meta
@@ -89,10 +88,8 @@
 			$err_code = null;
 			$err_msg  = null;
 			$ticket   = ( $superuser ) ?
-				\Ekko\Core\Services\TheKeyOAuth::singleton()->get_ticket( $this->get_service(), \Ekko\OAUTH_REFRESH_TOKEN ) :
-				( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
-					\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton()->get_cas_client()->retrievePT( $this->get_service(), $err_code, $err_msg ) :
-					\WPGCXPlugin::singleton()->cas_client()->retrievePT( $this->get_service(), $err_code, $err_msg );
+				\Ekko\Core\Services\TheKey::singleton()->get_ticket( $this->get_service(), \Ekko\OAUTH_REFRESH_TOKEN ) :
+				\Ekko\Core\Services\TheKey::singleton()->cas_client()->retrievePT( $this->get_service(), $err_code, $err_msg );
 
 			$response = wp_remote_post(
 				$this->vnsprintf( self::ENDPOINT_LOGIN, array( 'hub' => \Ekko\URI_HUB ) ),
@@ -291,7 +288,67 @@
 		}
 
 		/**
-		 * Get a list of user guid from the specified endpoint
+		 * Get Course Settings
+		 *
+		 * @param int         $course_id
+		 * @param string|null $session
+		 *
+		 * @return object|false
+		 */
+		public function get_settings( $course_id, $session = null ) {
+			$params   = array(
+				'hub'     => \Ekko\URI_HUB,
+				'session' => ( $session ) ? $session : $this->get_session(),
+				'course'  => $course_id,
+			);
+			$response = wp_remote_get(
+				$this->vnsprintf( self::ENDPOINT_SETTINGS, $params ),
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Content-Type' => 'application/json'
+					),
+				)
+			);
+			if ( $response && array_key_exists( 'body', $response ) ) {
+				return json_decode( $response[ 'body' ] );
+			}
+			return false;
+		}
+
+		/**
+		 * Update Course Settings
+		 *
+		 * @param int         $course_id
+		 * @param object      $settings
+		 * @param string|null $session
+		 *
+		 * @return object|false
+		 */
+		public function update_settings( $course_id, $settings, $session = null ) {
+			$params   = array(
+				'hub'     => \Ekko\URI_HUB,
+				'session' => ( $session ) ? $session : $this->get_session(),
+				'course'  => $course_id,
+			);
+			$response = wp_remote_post(
+				$this->vnsprintf( self::ENDPOINT_SETTINGS, $params ),
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Content-Type' => 'application/x-www-form-urlencoded'
+					),
+					'body'        => $settings,
+				)
+			);
+			if ( $response && array_key_exists( 'body', $response ) ) {
+				return json_decode( $response[ 'body' ] );
+			}
+			return false;
+		}
+
+		/**
+		 * Get a list of GUID from the specified endpoint
 		 *
 		 * @param int         $course_id
 		 * @param string      $endpoint
@@ -310,14 +367,15 @@
 				array(
 					'redirection' => 0,
 					'headers'     => array(
-						'Content-Type' => 'application/xml'
+						'Content-Type' => 'application/xml',
+						'Accept'       => 'application/xml',
 					),
 				)
 			);
 			$users    = array();
 			if ( $dom = $this->parse_xml_to_domdoc( $response[ 'body' ] ) ) {
 				$xpath = $this->xpath_parser( $dom );
-				foreach ( $xpath->query( '/hub:admins/hub:user/@guid' ) as $guid ) {
+				foreach ( $xpath->query( '/hub:users/hub:user/@guid' ) as $guid ) {
 					$users[ ] = strtolower( $guid->value );
 				}
 			}
