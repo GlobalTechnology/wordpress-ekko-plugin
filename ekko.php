@@ -2,10 +2,10 @@
 	/*
 	 * Plugin Name: Ekko - Development
 	 * Plugin URI:
-	 * Description: *WARNING* Unstable Development Version. Ekko Course Creator and Content Management
+	 * Description: Ekko Course Creator and Content Management
 	 * Author:      Brian Zoetewey
 	 * Author URI:
-	 * Version:     0.1-dev
+	 * Version:     0.2
 	 * Text Domain: ekko
 	 * Domain Path: /languages/
 	 * License:     Modified BSD
