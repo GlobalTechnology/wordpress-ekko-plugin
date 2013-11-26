@@ -1,10 +1,10 @@
 <?php namespace Ekko {
 	/*
-	 * Plugin Name: Ekko - Development
-	 * Plugin URI:
+	 * Plugin Name: Ekko
+	 * Plugin URI:  ekkomobile.com
 	 * Description: Ekko Course Creator and Content Management
 	 * Author:      Brian Zoetewey
-	 * Author URI:
+	 * Author URI:  ekkomobile.com
 	 * Version:     0.2
 	 * Text Domain: ekko
 	 * Domain Path: /languages/
