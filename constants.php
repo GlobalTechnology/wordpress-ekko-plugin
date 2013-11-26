@@ -25,12 +25,6 @@
 	const XMLNS_HUB = 'https://ekkoproject.org/hub';
 
 	/**
-	 * Ekko Hub URI
-	 * @var string
-	 */
-	const URI_HUB = 'https://servicesdev.gcx.org/ekko/';
-
-	/**
 	 * Plugin URL
 	 * @name PLUGIN_URL
 	 * @var string
