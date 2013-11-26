@@ -95,8 +95,8 @@
 			wp_register_script( 'bootstrap', \Ekko\PLUGIN_URL . 'lib/bootstrap/js/bootstrap.js', array( 'jquery' ), null, false );
 
 			//Bootstrap Switch
-			wp_register_style( 'bootstrap-switch', \Ekko\PLUGIN_URL . 'lib/bootstrapSwitch/bootstrapSwitch.css', array( 'bootstrap' ) );
-			wp_register_script( 'bootstrap-switch', \Ekko\PLUGIN_URL . 'lib/bootstrapSwitch/bootstrapSwitch.js', array( 'jquery' ) );
+			wp_register_style( 'bootstrap-switch', \Ekko\PLUGIN_URL . 'lib/bootstrapSwitch/bootstrap-switch.css', array( 'bootstrap' ) );
+			wp_register_script( 'bootstrap-switch', \Ekko\PLUGIN_URL . 'lib/bootstrapSwitch/bootstrap-switch.js', array( 'jquery' ) );
 
 			//AngularJS
 			wp_register_script( 'angular', \Ekko\PLUGIN_URL . 'lib/angular/angular.js', array(), null, false );
