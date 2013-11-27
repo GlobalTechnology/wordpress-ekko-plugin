@@ -1,16 +1,17 @@
 window.ekko = window.ekko || {};
 
-;(function($) {
+(function ( $ ) {
 	var media,
 		l10n,
 		workflows = {};
 
 	//Create new EkkoFrame, used internally by ekko.media.editor
-	media = ekko.media = function( attributes ) {
+	media = ekko.media = function ( attributes ) {
 		var frame;
 
-		if ( ! ekko.media.view.EkkoFrame )
+		if ( !ekko.media.view.EkkoFrame ) {
 			return;
+		}
 
 		frame = new ekko.media.view.EkkoFrame( attributes );
 
@@ -23,7 +24,7 @@ window.ekko = window.ekko || {};
 	l10n = ekko.l10n = typeof _EkkoAppL10N === 'undefined' ? {} : _EkkoAppL10N.l10n;
 
 	// OEmbed Controller
-	media.controller.oEmbed = wp.media.controller.State.extend({
+	media.controller.oEmbed = wp.media.controller.State.extend( {
 		defaults: {
 			id:       'oembed',
 			url:      '',
@@ -38,52 +39,55 @@ window.ekko = window.ekko || {};
 
 		sensitivity: 200,
 
-		initialize: function() {
+		initialize: function () {
 			this.debouncedScan = _.debounce( _.bind( this.scan, this ), this.sensitivity );
-			this.props = new Backbone.Model({ url: '' });
+			this.props = new Backbone.Model( { url: '' } );
 			this.props.on( 'change:url', this.debouncedScan, this );
 			this.props.on( 'change:url', this.refresh, this );
 			this.on( 'scan', this.scanImage, this );
 		},
 
-		scan: function() {
+		scan: function () {
 			var scanners,
 				embed = this,
 				attributes = {
-					type: 'none',
+					type:     'none',
 					scanners: []
 				},
-				url = this.props.get('url');
+				url = this.props.get( 'url' );
 
-			if ( url && url.match( this.get( 'pattern' ) ) )
+			if ( url && url.match( this.get( 'pattern' ) ) ) {
 				this.trigger( 'scan', attributes );
+			}
 
 			if ( attributes.scanners.length ) {
 				scanners = attributes.scanners = $.when.apply( $, attributes.scanners );
-				scanners.always( function() {
-					if ( embed.get('scanners') === scanners )
+				scanners.always( function () {
+					if ( embed.get( 'scanners' ) === scanners ) {
 						embed.set( 'loading', false );
-				});
+					}
+				} );
 			} else {
 				attributes.scanners = null;
 			}
 
-			attributes.loading = !! attributes.scanners;
+			attributes.loading = !!attributes.scanners;
 			this.set( attributes );
 		},
 
-		scanImage: function( attributes ) {
+		scanImage: function ( attributes ) {
 			var frame = this.frame,
 				state = this,
-				url = this.props.get('url');
+				url = this.props.get( 'url' );
 
 			attributes.scanners.push( wp.media.post( 'ekko-oembed', {
-					json: true,
-					url: this.props.get('url')
-				} ).done( function( data ) {
+				json: true,
+				url:  this.props.get( 'url' )
+			} ).done( function ( data ) {
 
-					if ( state !== frame.state() || url !== state.props.get('url') )
+					if ( state !== frame.state() || url !== state.props.get( 'url' ) ) {
 						return;
+					}
 
 					state.set( {
 						type: data.type
@@ -94,137 +98,141 @@ window.ekko = window.ekko || {};
 			);
 		},
 
-		refresh: function() {
+		refresh: function () {
 			this.frame.toolbar.get().refresh();
 		},
 
-		reset: function() {
-			this.props.clear().set({ url: '' });
+		reset: function () {
+			this.props.clear().set( { url: '' } );
 
-			if ( this.active )
+			if ( this.active ) {
 				this.refresh();
+			}
 		}
 
-	});
+	} );
 
 	// OEmbed View Content
-	media.view.oEmbed = wp.media.view.Embed.extend({
-		refresh: function() {
-			var type = this.model.get('type'),
+	media.view.oEmbed = wp.media.view.Embed.extend( {
+		refresh: function () {
+			var type = this.model.get( 'type' ),
 				constructor;
 
-			if ( 'none' === type )
+			if ( 'none' === type ) {
 				constructor = media.view.oEmbedNone;
-			if( 'video' === type )
+			}
+			if ( 'video' === type ) {
 				constructor = media.view.oEmbedVideo;
-			else
+			}
+			else {
 				return;
+			}
 
-			this.settings( new constructor({
+			this.settings( new constructor( {
 				controller: this.controller,
 				model:      this.model.props,
 				priority:   40
-			}) );
+			} ) );
 		}
-	});
+	} );
 
 	// OEmbed View Content - Type = 'none'
-	media.view.oEmbedNone = wp.media.view.Settings.extend({
+	media.view.oEmbedNone = wp.media.view.Settings.extend( {
 		className: 'oembed-none'
-	});
+	} );
 
 	// OEmbed View Content - Type = 'video'
-	media.view.oEmbedVideo = wp.media.view.Settings.extend({
+	media.view.oEmbedVideo = wp.media.view.Settings.extend( {
 		className: 'oembed-video',
-		template: wp.media.template( 'oembed-video' ),
+		template:  wp.media.template( 'oembed-video' ),
 
-		initialize: function() {
+		initialize: function () {
 			wp.media.view.Settings.prototype.initialize.apply( this, arguments );
 			this.model.on( 'change:html', this.updateHtml, this );
 		},
 
-		updateHtml: function() {
-			this.$('.video').html( this.model.get( 'html' ) );
+		updateHtml: function () {
+			this.$( '.video' ).html( this.model.get( 'html' ) );
 		}
-	});
+	} );
 
 	// OEmbed Toolbar
-	media.view.oEmbedToolbar = wp.media.view.Toolbar.Select.extend({
-		initialize: function() {
+	media.view.oEmbedToolbar = wp.media.view.Toolbar.Select.extend( {
+		initialize: function () {
 			_.defaults( this.options, {
-				text: '',
+				text:     '',
 				requires: false
-			});
+			} );
 
 			wp.media.view.Toolbar.Select.prototype.initialize.apply( this, arguments );
 		},
 
-		refresh: function() {
+		refresh: function () {
 			var state = this.controller.state(),
 				url = state.props.get( 'url' ),
 				pattern = state.get( 'pattern' );
 
-			this.get( 'select' ).model.set( 'disabled', ! url || ! url.match( pattern ) );
+			this.get( 'select' ).model.set( 'disabled', !url || !url.match( pattern ) );
 
 			wp.media.view.Toolbar.Select.prototype.refresh.apply( this, arguments );
 		}
-	});
+	} );
 
 	// EkkoFrame - The main media selector for Ekko
 	media.view.EkkoFrame = wp.media.view.MediaFrame.Select.extend( {
 
-		initialize: function() {
+		initialize: function () {
 			_.defaults( this.options, {
-				multiple:  false,
-				editing:   false,
+				multiple: false,
+				editing:  false,
 				state:    'insert'
-			});
+			} );
 
 			wp.media.view.MediaFrame.Select.prototype.initialize.apply( this, arguments );
 			this.createIframeStates();
 		},
 
-		createStates: function() {
+		createStates: function () {
 			var options = this.options;
 
 			// Add the default states.
-			this.states.add([
+			this.states.add( [
 				// Main states.
-				new wp.media.controller.Library({
-					id:         'insert',
-					title:      l10n.addMediaTitle,
-					priority:   20,
-					toolbar:    'main-insert',
-					filterable: 'all',
-					library:    wp.media.query( options.library ),
-					multiple:   options.multiple ? 'reset' : false,
-					editable:   true,
+				new wp.media.controller.Library( {
+					id:                  'insert',
+					title:               l10n.addMediaTitle,
+					priority:            20,
+					toolbar:             'main-insert',
+					filterable:          'all',
+					library:             wp.media.query( options.library ),
+					multiple:            options.multiple ? 'reset' : false,
+					editable:            true,
 
 					// If the user isn't allowed to edit fields,
 					// can they still edit it locally?
-					allowLocalEdits: true,
+					allowLocalEdits:     true,
 
 					// Show the attachment display settings.
-					displaySettings: false,
+					displaySettings:     false,
 					// Update user settings when users adjust the
 					// attachment display settings.
 					displayUserSettings: true
-				}),
+				} ),
 
 				// Embed states.
-				new media.controller.oEmbed({
+				new media.controller.oEmbed( {
 					id:      'oembed-youtube',
 					title:   l10n.youTubeTitle,
 					pattern: /https?:\/\/((www\.)?youtube.com\/watch|youtu.be\/).*/i
-				}),
+				} ),
 
-				new media.controller.oEmbed({
+				new media.controller.oEmbed( {
 					id:      'oembed-vimeo',
 					title:   l10n.vimeoTitle,
 					pattern: /https?:\/\/(www\.)?vimeo\.com\/.*/i
-				})
+				} )
 
-			]);
+			] );
 
 			if ( wp.media.view.settings.post.featuredImageId ) {
 				this.states.add( new wp.media.controller.FeaturedImage( {
@@ -233,7 +241,7 @@ window.ekko = window.ekko || {};
 			}
 		},
 
-		bindHandlers: function() {
+		bindHandlers:      function () {
 			wp.media.view.MediaFrame.Select.prototype.bindHandlers.apply( this, arguments );
 			this.on( 'toolbar:create:main-insert', this.createToolbar, this );
 			this.on( 'toolbar:create:featured-image', this.featuredImageToolbar, this );
@@ -244,28 +252,28 @@ window.ekko = window.ekko || {};
 		},
 
 		// Menus
-		mainMenu: function( view ) {
-			view.set({
-				'library-separator': new wp.media.View({
+		mainMenu:          function ( view ) {
+			view.set( {
+				'library-separator': new wp.media.View( {
 					className: 'separator',
-					priority: 100
-				})
-			});
+					priority:  100
+				} )
+			} );
 		},
 
 		//Content
-		embedContent: function() {
-			var view = new media.view.oEmbed({
+		embedContent:      function () {
+			var view = new media.view.oEmbed( {
 				controller: this,
 				model:      this.state()
-			}).render();
+			} ).render();
 
 			this.content.set( view );
 			view.url.focus();
 		},
 
 		// Toolbars
-		mainInsertToolbar: function( view ) {
+		mainInsertToolbar: function ( view ) {
 			var controller = this;
 
 			view.set( 'insert', {
@@ -274,28 +282,28 @@ window.ekko = window.ekko || {};
 				text:     l10n.addMedia,
 				requires: { selection: true },
 
-				click: function() {
+				click: function () {
 					var state = controller.state(),
-						selection = state.get('selection');
+						selection = state.get( 'selection' );
 
 					controller.close();
 					state.trigger( 'insert', selection ).reset();
 				}
-			});
+			} );
 		},
 
-		featuredImageToolbar: function( toolbar ) {
+		featuredImageToolbar: function ( toolbar ) {
 			this.createSelectToolbar( toolbar, {
 				text:  l10n.setBanner,
 				state: this.options.state || 'upload'
-			});
+			} );
 		},
 
-		mainEmbedToolbar: function( toolbar ) {
-			toolbar.view = new media.view.oEmbedToolbar({
+		mainEmbedToolbar: function ( toolbar ) {
+			toolbar.view = new media.view.oEmbedToolbar( {
 				controller: this,
-				text: l10n.addMedia
-			});
+				text:       l10n.addMedia
+			} );
 		}
 
 	} );
@@ -304,63 +312,65 @@ window.ekko = window.ekko || {};
 	 * Ekko Banner Image
 	 */
 	ekko.media.EkkoBannerImage = {
-		get: function() {
+		get: function () {
 			return wp.media.view.settings.post.featuredImageId;
 		},
 
-		set: function( id ) {
+		set: function ( id ) {
 			var settings = wp.media.view.settings;
 
 			settings.post.featuredImageId = id;
 
 			wp.media.post( 'ekko-set-course-banner', {
-				json:         true,
-				post_id:      settings.post.id,
+				json:      true,
+				post_id:   settings.post.id,
 				banner_id: settings.post.featuredImageId,
-				_wpnonce:     settings.post.nonce
-			}).done( function( html ) {
-				$( '.well', '#coursebannerdiv' ).html( html );
-			});
+				_wpnonce:  settings.post.nonce
+			} ).done( function ( html ) {
+					$( '.well', '#coursebannerdiv' ).html( html );
+				} );
 		},
 
-		frame: function() {
-			if ( this._frame )
+		frame: function () {
+			if ( this._frame ) {
 				return this._frame;
+			}
 
-			this._frame = wp.media({
-				state: 'featured-image',
+			this._frame = wp.media( {
+				state:  'featured-image',
 				states: [ new wp.media.controller.FeaturedImage( {
 					title: l10n.setBannerTitle
 				} ) ]
-			});
+			} );
 
-			this._frame.on( 'toolbar:create:featured-image', function( toolbar ) {
+			this._frame.on( 'toolbar:create:featured-image', function ( toolbar ) {
 				this.createSelectToolbar( toolbar, {
 					text: l10n.setBanner
-				});
+				} );
 			}, this._frame );
 
-			this._frame.state('featured-image').on( 'select', this.select );
+			this._frame.state( 'featured-image' ).on( 'select', this.select );
 			return this._frame;
 		},
 
-		select: function() {
+		select: function () {
 			var settings = wp.media.view.settings,
-				selection = this.get('selection').single();
+				selection = this.get( 'selection' ).single();
 
-			if ( ! settings.post.featuredImageId )
+			if ( !settings.post.featuredImageId ) {
 				return;
+			}
 
 			ekko.media.EkkoBannerImage.set( selection ? selection.id : -1 );
 		},
 
-		init: function() {
-			$('#coursebannerdiv').on( 'click', 'a.btn', function( event ) {
+		init: function () {
+			$( '#coursebannerdiv' ).on( 'click', 'a.btn', function ( event ) {
 				event.preventDefault();
 				// Stop propagation to prevent thickbox from activating.
 				event.stopPropagation();
 				ekko.media.EkkoBannerImage.frame().open();
-			});
+			} );
 		}
 	};
 	$( ekko.media.EkkoBannerImage.init );
@@ -370,24 +380,25 @@ window.ekko = window.ekko || {};
 	 */
 	ekko.media.editor = {
 
-		add: function( id, options ) {
+		add: function ( id, options ) {
 			var workflow = this.get( id );
 
-			if ( workflow )
+			if ( workflow ) {
 				return workflow;
+			}
 
 			workflow = workflows[ id ] = ekko.media( _.defaults( options || {}, {
 				state:    'insert',
 				multiple: false
 			} ) );
 
-			workflow.state( 'oembed-youtube' ).on( 'select', function() {
+			workflow.state( 'oembed-youtube' ).on( 'select', function () {
 				var state = workflow.state(),
 					data = state.props.toJSON();
 				state.trigger( 'embed', data, 'youtube' );
 			}, this );
 
-			workflow.state( 'oembed-vimeo' ).on( 'select', function() {
+			workflow.state( 'oembed-vimeo' ).on( 'select', function () {
 				var state = workflow.state(),
 					data = state.props.toJSON();
 				state.trigger( 'embed', data, 'vimeo' );
@@ -398,22 +409,23 @@ window.ekko = window.ekko || {};
 			return workflow;
 		},
 
-		get: function( id ) {
+		get: function ( id ) {
 			return workflows[ id ];
 		},
 
-		remove: function( id ) {
+		remove: function ( id ) {
 			delete workflows[ id ];
 		},
 
-		open: function( id, options ) {
+		open: function ( id, options ) {
 			var workflow;
 
 			workflow = this.get( id );
 
 			// Initialize the editor's workflow if we haven't yet.
-			if ( ! workflow )
+			if ( !workflow ) {
 				workflow = this.add( id, options );
+			}
 
 			return workflow.open();
 		}
@@ -424,40 +436,42 @@ window.ekko = window.ekko || {};
 	 * Thumbnail Media Chooser
 	 */
 	ekko.media.thumbnail = {
-		add: function( id, options ) {
+		add: function ( id, options ) {
 			var workflow = this.get( id );
 
-			if( workflow )
+			if ( workflow ) {
 				return workflow;
+			}
 
-			workflow = workflows[ id ] = new wp.media.view.MediaFrame.Select({
-				title: l10n.addThumbnailTitle,
-				library: { type: 'image' },
+			workflow = workflows[ id ] = new wp.media.view.MediaFrame.Select( {
+				title:    l10n.addThumbnailTitle,
+				library:  { type: 'image' },
 				multiple: false
-			});
+			} );
 
 			return workflow;
 		},
 
-		get: function( id ) {
+		get: function ( id ) {
 			return workflows[ id ];
 		},
 
-		remove: function( id ) {
+		remove: function ( id ) {
 			delete workflows[ id ];
 		},
 
-		open: function( id, options ) {
+		open: function ( id, options ) {
 			var workflow;
 
 			workflow = this.get( id );
 
-			if( ! workflow )
+			if ( !workflow ) {
 				workflow = this.add( id, options );
+			}
 
 			return workflow.open();
 		}
 	};
 	_.bindAll( ekko.media.thumbnail, 'open' );
 
-} )(jQuery);
+})( jQuery );
