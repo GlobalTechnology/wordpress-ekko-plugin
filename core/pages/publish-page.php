@@ -4,7 +4,7 @@
 
 		final protected function __construct() {
 			add_action( 'load-ekko-course_page_ekko-publish', array( &$this, 'check_publish' ), 10, 0 );
-			add_submenu_page( 'edit.php?post_type=ekko-course', __( 'Publish Course to EKKO', \Ekko\TEXT_DOMAIN ), null, 'edit_posts', 'ekko-publish', array( &$this, 'display_page' ) );
+			add_submenu_page( null, __( 'Publish Course to EKKO', \Ekko\TEXT_DOMAIN ), null, 'edit_posts', 'ekko-publish', array( &$this, 'display_page' ) );
 			add_action( 'post_row_actions', array( &$this, 'post_row_actions' ), 10, 2 );
 			add_action( 'redirect_post_location', array( &$this, 'redirect_post' ), 10, 2 );
 		}

@@ -53,6 +53,12 @@ angular.module( 'EkkoApp.services', [] )
 					provider: provider
 				};
 			},
+			media_ecv: function( id ) {
+				return {
+					type: 'ecv',
+					ecv_id: id
+				};
+			},
 			//Returns a new Quiz
 			quiz: function() {
 				return {

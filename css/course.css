@@ -61,6 +61,11 @@
 	padding: 10px 20px 10px 0;
 }
 
+.ekko-bootstrap .in.collapse
+{
+	overflow: visible;
+}
+
 .ekko-bootstrap .well .collapse
 {
 	margin: 0 20px;
@@ -502,4 +507,21 @@ pink   c3325f d3557d 9a284c c3325f f7dfe6
 	bottom: 0;
 	padding: 16px 16px 32px;
 	overflow: auto;
+}
+
+.attachments-browser.videos-browser .attachments,
+.attachments-browser.videos-browser .uploader-inline
+{
+	top: 8px;
+	right: 0;
+}
+
+.attachment-preview.type-ecv-video .media-progress-bar
+{
+	top: 40%;
+}
+
+.media-menu .upload-inline-status
+{
+	margin: 20px 10px;
 }
