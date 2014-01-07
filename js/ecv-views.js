@@ -605,7 +605,7 @@
 		initialize: function () {
 			var selection = this.options.selection;
 
-			this.model.on( 'change:sizes change:uploading', this.render, this );
+			this.model.on( 'change:sizes change:uploading change:state', this.render, this );
 			this.model.on( 'change:percent', this.progress, this );
 
 			// Update the selection.

@@ -62,7 +62,6 @@
 		final public function get_ekko_thumbnail() {
 			$id = array_key_exists( 'id', $_REQUEST ) ? (int)stripslashes( $_REQUEST[ 'id' ] ) : null;
 			if ( $id ) {
-				$image = image_get_intermediate_size( $id, 'ekko-thumbnail' );
 				$src   = wp_get_attachment_image_src( $id, 'ekko-thumbnail', true );
 				wp_redirect( $src[ 0 ] );
 				exit();

@@ -61,10 +61,36 @@ window.ekko = window.ekko || {};
 	 * @augments Backbone.Model
 	 */
 	Video = ekko.media.model.Video = Backbone.Model.extend( /** @lends ekko.media.model.Video */ {
-		sync: function ( method, model, options ) {
-			console.log( 'ekko.media.model.Video::' + method );
-			var deferred = $.Deferred();
-			return deferred.resolveWith( model ).promise();
+		initialize:   function ( attributes, options ) {
+			this.on( 'change:state', this.stateChanged, this );
+		},
+		stateChanged: function () {
+			var self = this,
+				timer = this.get( 'state-timer' );
+			//Clear the timer if set
+			if ( timer ) {
+				clearInterval( timer );
+				this.unset( 'state-timer', { silent: true } );
+			}
+			//Set timer if state is pending
+			if ( 'PENDING' == this.get( 'state' ) ) {
+				this.set( 'state-timer', setInterval( function () {
+					self.fetch();
+				}, 5 * 1000 ), { silent: true } );
+			}
+		},
+		sync:         function ( method, model, options ) {
+			if ( 'read' == method ) {
+				options = options || {};
+				options.context = this;
+				options.data = _.extend( options.data || {}, {
+					id:     this.get( 'id' ),
+					action: 'ecv-get-video'
+				} );
+				return wp.media.ajax( options );
+			} else {
+				return Backbone.sync.apply( this, arguments );
+			}
 		}
 	}, /** @lends ekko.media.model.Video.prototype */ {
 		create: function ( attrs ) {
@@ -92,7 +118,34 @@ window.ekko = window.ekko || {};
 			if ( this.props.get( 'query' ) ) {
 				this.mirror( Query.get( this.props.toJSON() ) );
 			}
+		},
+
+		parse: function ( resp, xhr ) {
+			if ( !_.isArray( resp ) ) {
+				resp = [resp];
+			}
+
+			return _.map( resp, function ( attrs ) {
+				var id, video, newAttributes;
+
+				if ( attrs instanceof Backbone.Model ) {
+					id = attrs.get( 'id' );
+					attrs = attrs.attributes;
+				} else {
+					id = attrs.id;
+				}
+
+				video = Video.get( id );
+				newAttributes = video.parse( attrs, xhr );
+
+				if ( !_.isEqual( video.attributes, newAttributes ) ) {
+					video.set( newAttributes );
+				}
+
+				return video;
+			} );
 		}
+
 	} );
 
 	/**
@@ -174,7 +227,7 @@ window.ekko = window.ekko || {};
 		sync: function ( method, collection, options ) {
 			var args, fallback;
 
-			// Overload the read method so Attachment.fetch() functions correctly.
+			// Overload the read method so Videos.fetch() functions correctly.
 			if ( 'read' === method ) {
 				options = options || {};
 				options.context = this;

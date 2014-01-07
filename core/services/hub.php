@@ -13,8 +13,11 @@
 		const ENDPOINT_ADMINS         = '%(hub)s%(session)s/courses/course/%(course)s/admins';
 		const ENDPOINT_SETTINGS       = '%(hub)s%(session)s/courses/course/%(course)s/settings.json';
 		const ENDPOINT_CREATE_VIDEO   = '%(hub)s%(apikey)s/videos';
-		const ENDPOINT_GET_VIDEOS     = '%(hub)s%(apikey)s/videos?group=%(group)s';
+		const ENDPOINT_GET_VIDEOS     = '%(hub)s%(apikey)s/videos';
+		const ENDPOINT_GET_VIDEO      = '%(hub)s%(apikey)s/videos/video/%(video)s';
 		const ENDPOINT_PROCESS_VIDEO  = '%(hub)s%(apikey)s/videos/video/%(video)s/storeS3';
+		const ENDPOINT_DELETE_VIDEOS  = '%(hub)s%(apikey)s/videos';
+		const ENDPOINT_VIDEO_COURSES  = '%(hub)s%(apikey)s/videos/video/%(video)s/courses';
 
 		const META_SESSION = 'ekko-hub-session';
 
@@ -223,12 +226,15 @@
 		}
 
 		/**
-		 * Get a list of resource sha1 hashes for currently uploaded resources
+		 * Get a list of resources currently in use for the course
 		 *
 		 * @param string      $course_id
 		 * @param string|null $session
 		 *
-		 * @return array
+		 * @return array $resources {
+		 * @type array        $files  file sha1 hashes
+		 * @type array        $videos video ids
+		 * }
 		 */
 		public function get_resources( $course_id, $session = null ) {
 			$params    = array(
@@ -246,11 +252,14 @@
 				)
 			);
 			$dom       = \GTO\Framework\Util\XML::parse_xml_to_domdoc( $response[ 'body' ] );
-			$resources = array();
+			$resources = array( 'files' => array(), 'videos' => array() );
 			if ( $dom ) {
 				$xpath = $this->ekko_xpath_parser( $dom );
-				foreach ( $xpath->query( '/hub:resources/hub:resource/@sha1' ) as $sha1 ) {
-					$resources[ ] = $sha1->value;
+				foreach ( $xpath->query( '/hub:resources/hub:file/@sha1' ) as $sha1 ) {
+					$resources[ 'files' ][ ] = $sha1->value;
+				}
+				foreach ( $xpath->query( '/hub:resources/hub:video/@id' ) as $video_id ) {
+					$resources[ 'videos' ][ ] = "{$video_id->value}";
 				}
 			}
 			return $resources;
@@ -515,27 +524,18 @@
 		/**
 		 * Get Ekko Cloud Videos list
 		 *
-		 * @param string $group
-		 * @param int    $start
-		 * @param int    $limit
-		 * @param string $orderby
+		 * @param $options
 		 *
 		 * @return array
 		 */
-		public function get_videos( $group, $start = 0, $limit = 40, $orderby = '' ) {
-			global $logger;
-			$url = add_query_arg(
-				array(
-					'group' => urlencode( "{$group}" ),
-					'start' => urlencode( "{$start}" ),
-					'limit' => urlencode( "{$limit}" ),
-				),
+		public function get_videos( $options = array() ) {
+			$url      = add_query_arg(
+				$options,
 				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_GET_VIDEOS, array(
 					'hub'    => \Ekko\URI_HUB,
 					'apikey' => \Ekko\HUB_API_KEY,
 				) )
 			);
-			$logger->debug( "URL: $url" );
 			$response = wp_remote_get( $url,
 				array(
 					'redirection' => 0,
@@ -544,8 +544,7 @@
 					),
 				)
 			);
-			$logger->debug( var_export( $response, true ) );
-			if ( $response && array_key_exists( 'body', $response ) ) {
+			if ( $this->is_response_OK( $response ) && array_key_exists( 'body', $response ) ) {
 				$data = json_decode( $response[ 'body' ], true );
 				if ( null !== $data ) {
 					if ( ! array_key_exists( 'videos', $data ) )
@@ -585,8 +584,8 @@
 					),
 				)
 			);
-			if ( $response && array_key_exists( 'body', $response ) ) {
-				return json_decode( $response[ 'body' ] );
+			if ( $this->is_response_OK( $response ) && array_key_exists( 'body', $response ) ) {
+				return json_decode( $response[ 'body' ], true );
 			}
 			return false;
 		}
@@ -594,17 +593,17 @@
 		/**
 		 * Inform Ekko Cloud Video system that the video has been uploaded and processing can begin
 		 *
-		 * @param string $id
+		 * @param string $video_id
 		 * @param string $key
 		 * @param string $bucket
 		 *
 		 * @return array|false
 		 */
-		public function process_video( $id, $key, $bucket ) {
+		public function process_video( $video_id, $key, $bucket ) {
 			$params   = array(
 				'hub'    => \Ekko\URI_HUB,
 				'apikey' => \Ekko\HUB_API_KEY,
-				'video'  => "{$id}",
+				'video'  => "{$video_id}",
 			);
 			$response = wp_remote_post(
 				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_PROCESS_VIDEO, $params ),
@@ -621,8 +620,144 @@
 					),
 				)
 			);
-			if ( $response && array_key_exists( 'body', $response ) ) {
-				return json_decode( $response[ 'body' ] );
+			if ( $this->is_response_OK( $response ) && array_key_exists( 'body', $response ) ) {
+				return json_decode( $response[ 'body' ], true );
+			}
+			return false;
+		}
+
+		/**
+		 * Get a video by ID
+		 *
+		 * @param $video_id
+		 * @param $group
+		 *
+		 * @return array|false
+		 */
+		public function get_video( $video_id, $group ) {
+			$url = add_query_arg(
+				array( 'group' => $group ),
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_GET_VIDEO, array(
+					'hub'    => \Ekko\URI_HUB,
+					'apikey' => \Ekko\HUB_API_KEY,
+					'video'  => "{$video_id}",
+				) )
+			);
+			$response = wp_remote_get( $url,
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Accept' => 'application/json',
+					),
+				)
+			);
+			if ( $this->is_response_OK( $response ) && array_key_exists( 'body', $response ) ) {
+				return (array)json_decode( $response[ 'body' ], true );
+			}
+			return false;
+		}
+
+		/**
+		 * @param array $videos
+		 *
+		 * @return array|false
+		 */
+		public function delete_videos( $videos = array() ) {
+			$params = array(
+				'hub'    => \Ekko\URI_HUB,
+				'apikey' => \Ekko\HUB_API_KEY,
+			);
+
+			if ( count( $videos ) <= 0 )
+				return false;
+
+			$response = wp_remote_request(
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_DELETE_VIDEOS, $params ),
+				array(
+					'method'  => 'DELETE',
+					'headers' => array(
+						'Content-Type' => 'application/json',
+						'Accept'       => 'application/json',
+					),
+					'body'    => json_encode( $videos ),
+				)
+			);
+			if ( $this->is_response_OK( $response ) && array_key_exists( 'body', $response ) ) {
+				return json_decode( $response[ 'body' ], true );
+			}
+			return false;
+		}
+
+		/**
+		 * Add or remove authorized Courses for a Video
+		 *
+		 * @param int   $video_id
+		 * @param array $add
+		 * @param array $remove
+		 */
+		public function update_video_courses( $video_id, array $add = array(), array $remove = array() ) {
+			$params = array(
+				'hub'    => \Ekko\URI_HUB,
+				'apikey' => \Ekko\HUB_API_KEY,
+				'video'  => "{$video_id}",
+			);
+
+			$courses = array_merge(
+				array_map( function ( $course_id ) {
+					return 'add=' . rawurlencode( $course_id );
+				}, $add ),
+				array_map( function ( $course_id ) {
+					return 'remove=' . rawurlencode( $course_id );
+				}, $remove )
+			);
+
+			if ( empty( $courses ) )
+				return;
+
+			wp_remote_post(
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_VIDEO_COURSES, $params ),
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Content-Type' => 'application/x-www-form-urlencoded',
+					),
+					'body'        => implode( '&', $courses ),
+				)
+			);
+		}
+
+		/**
+		 * Authorize a course to use a video
+		 *
+		 * @param int $video_id
+		 * @param int $course_id
+		 */
+		public function add_course_to_video( $video_id, $course_id ) {
+			$this->update_video_courses( $video_id, array( "{$course_id}" ) );
+		}
+
+		/**
+		 * De-authorize a courses use of a video
+		 *
+		 * @param int $video_id
+		 * @param int $course_id
+		 */
+		public function remove_course_from_video( $video_id, $course_id ) {
+			$this->update_video_courses( $video_id, array(), array( "{$course_id}" ) );
+		}
+
+		/**
+		 * Is the HTTP response successful
+		 *
+		 * @param array $response
+		 *
+		 * @return bool
+		 */
+		private function is_response_OK( $response ) {
+			if ( $response && ! is_wp_error( $response ) ) {
+				$code = (int)$response[ 'response' ][ 'code' ];
+				if ( 200 <= $code || 300 > $code )
+					return true;
 			}
 			return false;
 		}

@@ -1,5 +1,10 @@
 <?php namespace Ekko\Core\Managers {
 
+	/**
+	 * Class CloudVideoManager
+	 * @package Ekko\Core\Managers
+	 * @method static \Ekko\Core\Managers\CloudVideoManager singleton()
+	 */
 	final class CloudVideoManager extends \GTO\Framework\Singleton {
 
 		const VIDEO_STATE_NEW        = 'NEW';
@@ -7,6 +12,7 @@
 		const VIDEO_STATE_ENCODING   = 'ENCODING';
 		const VIDEO_STATE_CHECK      = 'CHECK';
 		const VIDEO_STATE_ENCODED    = 'ENCODED';
+		const VIDEO_STATE_PENDING    = 'PENDING';
 
 		final protected function __construct() {
 			add_action( 'admin_enqueue_scripts', array( &$this, 'register_scripts_styles' ), 5, 1 );
@@ -17,6 +23,8 @@
 				add_action( 'wp_ajax_ecv-query-videos', array( &$this, 'query_videos' ), 10, 0 );
 				add_action( 'wp_ajax_ecv-create-video', array( &$this, 'create_video' ), 10, 0 );
 				add_action( 'wp_ajax_ecv-process-video', array( &$this, 'process_video' ), 10, 0 );
+				add_action( 'wp_ajax_ecv-get-video', array( &$this, 'get_video' ), 10, 0 );
+				add_action( 'wp_ajax_ecv-video-thumbnail', array( &$this, 'video_thumbnail' ), 10, 0 );
 
 				//OEmbed
 				add_action( 'wp_ajax_ecv-oembed-video', array( &$this, 'oembed_video' ), 10, 0 );
@@ -100,34 +108,29 @@
 
 			$limit = (int)$args[ 'posts_per_page' ];
 			$page  = (int)$args[ 'paged' ];
-			$start = ( $page > 0 ? $page - 1 : $page ) * $limit;
-			$group = get_current_blog_id();
 
-			$results = \Ekko\Core\Services\Hub::singleton()->get_videos( $group, $start, $limit );
-			if ( ! array_key_exists( 'videos', $results ) ) {
-				$results[ 'videos' ] = array();
-			}
-			$data = array();
+			$results = \Ekko\Core\Services\Hub::singleton()->get_videos( array(
+				'group' => get_current_blog_id(),
+				'start' => ( $page > 0 ? $page - 1 : $page ) * $limit,
+				'limit' => $limit,
+			) );
+			$videos  = array();
 			foreach ( $results[ 'videos' ] as $video ) {
-				$data[ ] = $this->normalize_video( $video );
+				$videos[ ] = $this->normalize_video( $video );
 			}
-			wp_send_json_success( $data );
+			wp_send_json_success( $videos );
 		}
 
 		final public function create_video() {
 			if ( ! current_user_can( 'upload_files' ) )
 				wp_send_json_error();
 			$filename = isset( $_REQUEST[ 'filename' ] ) ? $_REQUEST[ 'filename' ] : '';
-			$group    = get_current_blog_id();
 
-			$data = \Ekko\Core\Services\Hub::singleton()->create_video( $filename, "{$group}" );
-			if ( $data ) {
-				$data = wp_parse_args( $data, array(
-					//S3 Object key
-					'key'   => \GTO\Framework\Util\UUID::v4() . '/' . $filename,
-					'title' => $filename,
-				) );
-				wp_send_json_success( $this->normalize_video( $data ) );
+			$video = \Ekko\Core\Services\Hub::singleton()->create_video( $filename, get_current_blog_id() );
+			if ( $video ) {
+				//Add S3 object key for upload to S3
+				$video[ 'key' ] = \GTO\Framework\Util\UUID::v4() . '/' . $filename;
+				wp_send_json_success( $this->normalize_video( $video ) );
 			}
 			wp_send_json_error();
 		}
@@ -139,11 +142,37 @@
 			$key    = isset( $_REQUEST[ 'key' ] ) ? $_REQUEST[ 'key' ] : '';
 			$bucket = isset( $_REQUEST[ 'bucket' ] ) ? $_REQUEST[ 'bucket' ] : '';
 
-			$data = \Ekko\Core\Services\Hub::singleton()->process_video( $id, $key, $bucket );
-			if ( $data ) {
-				wp_send_json_success( $this->normalize_video( $data ) );
+			$video = \Ekko\Core\Services\Hub::singleton()->process_video( $id, $key, $bucket );
+			if ( $video ) {
+				//State may not be immediately changed, set to CHECK so UI shows as processing
+				$video[ 'state' ] = self::VIDEO_STATE_CHECK;
+				wp_send_json_success( $this->normalize_video( $video ) );
 			}
 			wp_send_json_error();
+		}
+
+		final public function get_video() {
+			$id    = isset( $_REQUEST[ 'id' ] ) ? $_REQUEST[ 'id' ] : false;
+			$video = \Ekko\Core\Services\Hub::singleton()->get_video( $id, get_current_blog_id() );
+			if ( $video ) {
+				wp_send_json_success( $this->normalize_video( $video ) );
+			}
+			wp_send_json_error();
+		}
+
+		final public function video_thumbnail() {
+			$id        = isset( $_REQUEST[ 'id' ] ) ? $_REQUEST[ 'id' ] : false;
+			$thumbnail = \Ekko\PLUGIN_URL . 'images/default-video.png';
+
+			$video = \Ekko\Core\Services\Hub::singleton()->get_video( $id, get_current_blog_id() );
+			if ( $video ) {
+				if ( array_key_exists( 'thumbnail', $video ) ) {
+					$thumbnail = $video[ 'thumbnail' ];
+				}
+			}
+
+			wp_redirect( $thumbnail );
+			wp_die();
 		}
 
 		final public function oembed_video() {
@@ -162,7 +191,7 @@
 		}
 
 		/**
-		 * Normalize ECV Video object
+		 * Normalize video object for display in UI
 		 *
 		 * @param array $video
 		 *
@@ -172,8 +201,17 @@
 			$video = wp_parse_args( $video, array(
 				'state' => self::VIDEO_STATE_NEW,
 				'icon'  => \Ekko\PLUGIN_URL . 'images/default-video.png',
-//				'filename' => array_key_exists( 'title', $video ) ? $video[ 'title' ] : '',
 			) );
+
+			//normalize video state for UI purposes
+			if ( in_array( $video[ 'state' ], array( self::VIDEO_STATE_NEW_MASTER, self::VIDEO_STATE_ENCODING, self::VIDEO_STATE_CHECK ) ) ) {
+				$video[ 'state' ] = self::VIDEO_STATE_PENDING;
+			}
+
+			if ( array_key_exists( 'thumbnail', $video ) ) {
+				$video[ 'icon' ] = $video[ 'thumbnail' ];
+			}
+
 			return $video;
 		}
 

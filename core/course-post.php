@@ -150,15 +150,15 @@
 		 * @return string
 		 */
 		final static public function settings_to_enrollment_type( $settings ) {
-			if( $settings->public === true ) {
-				if( $settings->enrollmentType == 'disabled' )
+			if ( $settings->public === true ) {
+				if ( $settings->enrollmentType == 'disabled' )
 					$enrollment_type = self::ENROLLMENT_PUBLIC;
-				elseif( $settings->enrollmentType == 'approval' )
+				elseif ( $settings->enrollmentType == 'approval' )
 					$enrollment_type = self::ENROLLMENT_APPROVAL;
-				elseif( $settings->enrollmentType == 'open' )
+				elseif ( $settings->enrollmentType == 'open' )
 					$enrollment_type = self::ENROLLMENT_OPEN;
 			}
-			elseif( $settings->enrollmentType == 'approval' )
+			elseif ( $settings->enrollmentType == 'approval' )
 				$enrollment_type = self::ENROLLMENT_MANAGED;
 			else
 				$enrollment_type = self::ENROLLMENT_OPEN;
@@ -323,6 +323,9 @@
 							$resource->setAttribute( 'mimeType', $resource_item->mimeType = $media_post->post_mime_type );
 						}
 						break;
+					case 'ecv':
+						$resource->setAttribute( 'videoId', $resource_item->ecv_id );
+						break;
 					case 'uri':
 						$resource->setAttribute( 'uri', $resource_item->uri );
 						if ( $resource_item->provider )
@@ -343,7 +346,17 @@
 		 * @return string
 		 */
 		private function get_resource_id( $item ) {
-			$item->key = ( $item->type == 'file' ) ? "{$item->post_id}" : $item->uri;
+			switch ( $item->type ) {
+				case 'file':
+					$item->key = "file:{$item->post_id}";
+					break;
+				case 'ecv':
+					$item->key = "ecv:{$item->ecv_id}";
+					break;
+				case 'uri':
+					$item->key = $item->uri;
+					break;
+			}
 			foreach ( $this->resource_map as $resource ) {
 				if ( $resource->key == $item->key )
 					return $resource->id;

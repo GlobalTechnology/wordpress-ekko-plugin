@@ -80,6 +80,7 @@ angular.module( 'EkkoApp.controllers', [] )
 			if ( 'ecv' == media.mediaType ) {
 				item = $scope.$ekko.media( 'video' );
 				item.resource = $scope.$ekko.media_ecv( media.attributes.id );
+				item.thumbnail = $scope.$ekko.media_ecv( media.attributes.id );
 			}
 			else if ( 'file' == media.mediaType ) {
 				if ( _.indexOf( [ 'video', 'image' ], media.attributes.type ) > -1 ) {
@@ -135,7 +136,15 @@ angular.module( 'EkkoApp.controllers', [] )
 		$scope.updateThumbnailUrl = function () {
 			if ( _.indexOf( [ 'video', 'audio' ], $scope.media.type ) > -1 ) {
 				if ( $scope.media.thumbnail ) {
-					$scope.thumbnail_url = ( $scope.media.thumbnail.type == "uri" ) ? $scope.media.thumbnail.uri : _EkkoAppL10N.api_url + '?action=ekko-thumbnail&id=' + $scope.media.thumbnail.post_id;
+					if( $scope.media.thumbnail.type == "uri" ) {
+						$scope.thumbnail_url = $scope.media.thumbnail.uri;
+					}
+					else if( $scope.media.thumbnail.type == "ecv" ) {
+						$scope.thumbnail_url = _EkkoAppL10N.api_url + '?action=ecv-video-thumbnail&id=' + $scope.media.thumbnail.ecv_id;
+					}
+					else {
+						$scope.thumbnail_url = _EkkoAppL10N.api_url + '?action=ekko-thumbnail&id=' + $scope.media.thumbnail.post_id;
+					}
 				}
 			}
 			else {

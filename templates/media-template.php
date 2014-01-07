@@ -37,6 +37,11 @@
 			<div class="media-progress-bar">
 				<div></div>
 			</div>
+		<# } else if( data.state == 'PENDING' ) { #>
+			<img src="<?php echo \Ekko\PLUGIN_URL . 'images/video-processing.gif' ?>" class="icon" draggable="false" />
+			<div class="pending">
+				<div>Processing</div>
+			</div>
 		<# } else { #>
 			<img src="{{ data.icon }}" class="icon" draggable="false" />
 		<# } #>

@@ -19,16 +19,16 @@
 			$paged           = $this->get_pagenum();
 			$start           = ( $paged - 1 ) * $videos_per_page;
 
-			$results = \Ekko\Core\Services\Hub::singleton()->get_videos(
-				get_current_blog_id(),
-				$start,
-				$videos_per_page
-			);
+			$results = \Ekko\Core\Services\Hub::singleton()->get_videos( array(
+				'group' => get_current_blog_id(),
+				'start'    => $start,
+				'limit'    => $videos_per_page,
+			) );
 
 			$this->items = $results[ 'videos' ];
 
 			$this->set_pagination_args( array(
-				'total_items' => (int) $results[ 'total' ],
+				'total_items' => (int)$results[ 'total' ],
 				'per_page'    => $videos_per_page,
 			) );
 		}

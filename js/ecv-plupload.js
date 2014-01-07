@@ -237,8 +237,8 @@ window.wp = window.wp || {};
 				success: function ( data, status, xhr ) {
 					var complete;
 
-					file.ecv_video.set( {uploading: false } );
-					ekko.media.model.Video.get( file.ecv_video.id, file.ecv_video );
+					file.ecv_video.set( _.extend( data, { uploading: false } ) );
+					ekko.media.model.Video.get( data.id, file.ecv_video );
 
 					complete = ECVUploader.queue.all( function ( video ) {
 						return !video.get( 'uploading' );

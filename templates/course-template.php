@@ -140,7 +140,7 @@
 				<i class="icon-headphones"></i> <?php esc_html_e( 'Audio', \Ekko\TEXT_DOMAIN ); ?>
 			</span>
 		</p>
-		<img ng-src="{{thumbnail_url}}" style="width:150px; height:84px;" />
+		<img ng-src="{{thumbnail_url}}" />
 		<div class="row-fluid">
 			<a ui-if="!(media.type=='image')" href class="btn btn-mini btn-info pull-left" ng-click="addMediaThumbnail()"><?php esc_html_e( 'thumbnail', \Ekko\TEXT_DOMAIN ); ?></a>
 			<a href class="btn btn-mini btn-danger pull-right" ng-click="$parent.item.media.assets.splice( $index, 1 )"><?php esc_html_e( 'remove', \Ekko\TEXT_DOMAIN ); ?></a>
