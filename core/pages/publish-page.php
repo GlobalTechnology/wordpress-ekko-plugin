@@ -96,7 +96,7 @@
 						</p>
 
 						<p><?php
-							esc_html_e( 'Uploading Course Media:', \Ekko\TEXT_DOMAIN );
+							esc_html_e( 'Processing Course Media:', \Ekko\TEXT_DOMAIN );
 							$existing_resources = $hub->get_resources( $course_id );
 							$resources = $course->resources;
 							?>
@@ -109,6 +109,7 @@
 									}
 								}
 								elseif ( $resource->type == 'ecv' ) {
+									echo sprintf( '<li>%1$s</li>', basename( $resource->title ) );
 									if ( ! in_array( $resource->ecv_id, $existing_resources[ 'videos' ] ) ) {
 										$hub->add_course_to_video( $resource->ecv_id, $course_id );
 									}

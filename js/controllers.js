@@ -79,8 +79,8 @@ angular.module( 'EkkoApp.controllers', [] )
 			var item = null;
 			if ( 'ecv' == media.mediaType ) {
 				item = $scope.$ekko.media( 'video' );
-				item.resource = $scope.$ekko.media_ecv( media.attributes.id );
-				item.thumbnail = $scope.$ekko.media_ecv( media.attributes.id );
+				item.resource = $scope.$ekko.media_ecv( media.attributes.id, media.attributes.title );
+				item.thumbnail = $scope.$ekko.media_ecv( media.attributes.id, media.attributes.title );
 			}
 			else if ( 'file' == media.mediaType ) {
 				if ( _.indexOf( [ 'video', 'image' ], media.attributes.type ) > -1 ) {

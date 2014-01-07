@@ -76,7 +76,7 @@ window.ekko = window.ekko || {};
 			if ( 'PENDING' == this.get( 'state' ) ) {
 				this.set( 'state-timer', setInterval( function () {
 					self.fetch();
-				}, 5 * 1000 ), { silent: true } );
+				}, 60 * 1000 ), { silent: true } );
 			}
 		},
 		sync:         function ( method, model, options ) {

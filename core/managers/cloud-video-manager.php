@@ -210,6 +210,7 @@
 
 			if ( array_key_exists( 'thumbnail', $video ) ) {
 				$video[ 'icon' ] = $video[ 'thumbnail' ];
+				unset( $video[ 'thumbnail' ] );
 			}
 
 			return $video;
