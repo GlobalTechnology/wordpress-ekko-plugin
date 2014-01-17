@@ -8,8 +8,7 @@
 			$this->id       = 'ekkocousecreatordiv';
 			$this->location = self::LOC_STATIC_AFTER_EDITOR;
 			$this->ajax     = array(
-				'ekko-thumbnail' => array( &$this, 'get_ekko_thumbnail' ),
-				'ekko-oembed'    => array( &$this, 'fetch_oembed_response' ),
+				'ekko-thumbnail' => array( &$this, 'get_ekko_thumbnail' )
 			);
 		}
 
@@ -63,27 +62,11 @@
 		final public function get_ekko_thumbnail() {
 			$id = array_key_exists( 'id', $_REQUEST ) ? (int)stripslashes( $_REQUEST[ 'id' ] ) : null;
 			if ( $id ) {
-				$image = image_get_intermediate_size( $id, 'ekko-thumbnail' );
 				$src   = wp_get_attachment_image_src( $id, 'ekko-thumbnail', true );
 				wp_redirect( $src[ 0 ] );
 				exit();
 			}
 			wp_die( - 1 );
-		}
-
-		final public function fetch_oembed_response() {
-			$url = array_key_exists( 'url', $_REQUEST ) ? $_REQUEST[ 'url' ] : null;
-			if ( $url ) {
-				$data = null;
-				add_filter( 'oembed_dataparse', function ( $output, $oembed_data, $url ) use ( &$data ) {
-					$data = $oembed_data;
-					return $output;
-				}, 10, 3 );
-				$response = wp_oembed_get( $url );
-				if ( $data )
-					wp_send_json_success( $data );
-			}
-			wp_send_json_error();
 		}
 
 	}

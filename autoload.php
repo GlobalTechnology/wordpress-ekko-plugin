@@ -3,7 +3,7 @@
 	spl_autoload_register( function ( $class_name ) {
 
 		if ( strpos( $class_name, __NAMESPACE__ ) === 0 ) {
-			$name     = str_replace( __NAMESPACE__, '', $class_name );
+			$name     = preg_replace( '/^' . preg_quote( __NAMESPACE__ ) . '/', '', $class_name );
 			$name     = str_replace( '\\', DIRECTORY_SEPARATOR, $name );
 			$filename = strtolower( preg_replace( '/([a-z])([A-Z])/', '$1-$2', $name ) ) . '.php';
 
