@@ -21,8 +21,8 @@
 
 			$results = \Ekko\Core\Services\Hub::singleton()->get_videos( array(
 				'group' => get_current_blog_id(),
-				'start'    => $start,
-				'limit'    => $videos_per_page,
+				'start' => $start,
+				'limit' => $videos_per_page,
 			) );
 
 			$this->items = $results[ 'videos' ];
@@ -44,8 +44,8 @@
 			$columns = array(
 				'cb'        => '<input type="checkbox" />',
 				'thumbnail' => 'Thumbnail',
-				'state'     => 'State',
 				'title'     => 'Title',
+				'state'     => 'State',
 			);
 			return $columns;
 		}
@@ -66,7 +66,12 @@
 		}
 
 		public function column_thumbnail( $item ) {
-			?><img width="52" height="44" src="<?php echo \Ekko\PLUGIN_URL . 'images/default-video.png'; ?>" class="attachment-80x60" /><?php
+			if( array_key_exists( 'thumbnail', $item ) ) {
+				echo '<img height="60" src="' . esc_attr( $item['thumbnail'] ) . '" class="attachment-80x60" />';
+			}
+			else {
+				echo '<img height="60" src="' . \Ekko\PLUGIN_URL . 'images/default-video.png' . '" class="attachment-80x60" />';
+			}
 		}
 
 	}
