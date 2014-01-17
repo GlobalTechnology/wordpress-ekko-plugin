@@ -16,7 +16,7 @@
 		const ENDPOINT_GET_VIDEOS     = '%(hub)s%(apikey)s/videos';
 		const ENDPOINT_GET_VIDEO      = '%(hub)s%(apikey)s/videos/video/%(video)s';
 		const ENDPOINT_PROCESS_VIDEO  = '%(hub)s%(apikey)s/videos/video/%(video)s/storeS3';
-		const ENDPOINT_DELETE_VIDEOS  = '%(hub)s%(apikey)s/videos';
+		const ENDPOINT_DELETE_VIDEO   = '%(hub)s%(apikey)s/videos/video/%(video)s';
 		const ENDPOINT_VIDEO_COURSES  = '%(hub)s%(apikey)s/videos/video/%(video)s/courses';
 
 		const META_SESSION = 'ekko-hub-session';
@@ -62,7 +62,7 @@
 				array(
 					'redirection' => 0,
 					'headers'     => array(
-						'Accept' => 'application/xml'
+						'Accept' => 'text/plain'
 					),
 				)
 			);
@@ -99,7 +99,13 @@
 
 			$response = wp_remote_post(
 				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_LOGIN, array( 'hub' => \Ekko\URI_HUB ) ),
-				array( 'body' => array( 'ticket' => $ticket ) )
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Accept' => 'text/plain',
+					),
+					'body'        => array( 'ticket' => $ticket )
+				)
 			);
 			$session  = new HubSession( $response[ 'body' ] );
 
@@ -614,9 +620,9 @@
 						'Accept'       => 'application/json',
 					),
 					'body'        => array(
-						's3_bucket'            => $bucket,
-						's3_key'               => $key,
-						's3_remove_after_copy' => 'true',
+						's3_bucket'        => $bucket,
+						's3_key'           => $key,
+						's3_delete_source' => 'true',
 					),
 				)
 			);
@@ -635,7 +641,7 @@
 		 * @return array|false
 		 */
 		public function get_video( $video_id, $group ) {
-			$url = add_query_arg(
+			$url      = add_query_arg(
 				array( 'group' => $group ),
 				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_GET_VIDEO, array(
 					'hub'    => \Ekko\URI_HUB,
@@ -658,33 +664,31 @@
 		}
 
 		/**
-		 * @param array $videos
+		 * @param $video_id
+		 * @param $group
 		 *
 		 * @return array|false
 		 */
-		public function delete_videos( $videos = array() ) {
-			$params = array(
-				'hub'    => \Ekko\URI_HUB,
-				'apikey' => \Ekko\HUB_API_KEY,
+		public function delete_video( $video_id, $group ) {
+			$url      = add_query_arg(
+				array( 'group' => $group ),
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_DELETE_VIDEO, array(
+					'hub'    => \Ekko\URI_HUB,
+					'apikey' => \Ekko\HUB_API_KEY,
+					'video'  => "{$video_id}",
+				) )
 			);
-
-			if ( count( $videos ) <= 0 )
-				return false;
-
 			$response = wp_remote_request(
-				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_DELETE_VIDEOS, $params ),
+				$url,
 				array(
 					'method'  => 'DELETE',
 					'headers' => array(
-						'Content-Type' => 'application/json',
-						'Accept'       => 'application/json',
+						'Accept' => 'application/json',
 					),
-					'body'    => json_encode( $videos ),
 				)
 			);
-			if ( $this->is_response_OK( $response ) && array_key_exists( 'body', $response ) ) {
-				return json_decode( $response[ 'body' ], true );
-			}
+			if( $response && $response['code'] == 200 )
+				return true;
 			return false;
 		}
 

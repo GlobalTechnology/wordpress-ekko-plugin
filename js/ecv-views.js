@@ -277,7 +277,6 @@
 		},
 
 		createStates: function () {
-			var options = this.options;
 			this.states.add( [
 				new ekko.media.controller.ECVLibrary( {
 					id:       'insert',

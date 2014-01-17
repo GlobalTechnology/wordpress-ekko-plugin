@@ -165,13 +165,6 @@ window.wp = window.wp || {};
 
 				var extension = file.name.substring( file.name.lastIndexOf( '.' ) + 1 ).toLowerCase();
 				if ( !_.contains( extensions, extension ) ) {
-					/*
-					 up.trigger('Error', {
-					 code: plupload.FILE_EXTENSION_ERROR,
-					 message: "A Message",
-					 file: file
-					 });
-					 */
 					error( pluploadL10n.invalid_filetype, {}, file );
 					up.removeFile( file );
 					return

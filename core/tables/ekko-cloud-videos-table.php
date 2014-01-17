@@ -33,6 +33,13 @@
 			) );
 		}
 
+		public function get_bulk_actions() {
+			$actions = array(
+				'delete' => 'Delete',
+			);
+			return $actions;
+		}
+
 		public function get_columns() {
 			$columns = array(
 				'cb'        => '<input type="checkbox" />',
@@ -45,8 +52,7 @@
 
 		function column_cb( $item ) {
 			return sprintf(
-				'<input type="checkbox" name="videos[]" value="%2$s" />',
-				'user',
+				'<input type="checkbox" name="videos[]" value="%1$s" />',
 				$item[ 'id' ]
 			);
 		}

@@ -62,9 +62,9 @@ window.ekko = window.ekko || {};
 	 */
 	Video = ekko.media.model.Video = Backbone.Model.extend( /** @lends ekko.media.model.Video */ {
 		initialize:   function ( attributes, options ) {
-			this.on( 'change:state', this.stateChanged, this );
+			this.on( 'change:state', this._stateChanged, this );
 		},
-		stateChanged: function () {
+		_stateChanged: function () {
 			var self = this,
 				timer = this.get( 'state-timer' );
 			//Clear the timer if set
@@ -76,7 +76,7 @@ window.ekko = window.ekko || {};
 			if ( 'PENDING' == this.get( 'state' ) ) {
 				this.set( 'state-timer', setInterval( function () {
 					self.fetch();
-				}, 60 * 1000 ), { silent: true } );
+				}, 30 * 1000 ), { silent: true } );
 			}
 		},
 		sync:         function ( method, model, options ) {
@@ -89,7 +89,7 @@ window.ekko = window.ekko || {};
 				} );
 				return wp.media.ajax( options );
 			} else {
-				return Backbone.sync.apply( this, arguments );
+				return Backbone.Model.prototype.sync.apply( this, arguments );
 			}
 		}
 	}, /** @lends ekko.media.model.Video.prototype */ {
