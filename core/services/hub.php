@@ -12,8 +12,14 @@
 		const ENDPOINT_ENROLLED       = '%(hub)s%(session)s/courses/course/%(course)s/enrolled';
 		const ENDPOINT_ADMINS         = '%(hub)s%(session)s/courses/course/%(course)s/admins';
 		const ENDPOINT_SETTINGS       = '%(hub)s%(session)s/courses/course/%(course)s/settings.json';
+		const ENDPOINT_CREATE_VIDEO   = '%(hub)s%(apikey)s/videos';
+		const ENDPOINT_GET_VIDEOS     = '%(hub)s%(apikey)s/videos';
+		const ENDPOINT_GET_VIDEO      = '%(hub)s%(apikey)s/videos/video/%(video)s';
+		const ENDPOINT_PROCESS_VIDEO  = '%(hub)s%(apikey)s/videos/video/%(video)s/storeS3';
+		const ENDPOINT_DELETE_VIDEO   = '%(hub)s%(apikey)s/videos/video/%(video)s';
+		const ENDPOINT_VIDEO_COURSES  = '%(hub)s%(apikey)s/videos/video/%(video)s/courses';
 
-		const META_SESSION = 'ekko-hub-session';
+		const TRANSIENT_SESSION = 'hub-session';
 
 		/**
 		 * Singleton instance
@@ -52,11 +58,11 @@
 		 */
 		public function get_service() {
 			$response = wp_remote_get(
-				$this->vnsprintf( self::ENDPOINT_SERVICE, array( 'hub' => \Ekko\URI_HUB ) ),
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_SERVICE, array( 'hub' => \Ekko\URI_HUB ) ),
 				array(
 					'redirection' => 0,
 					'headers'     => array(
-						'Content-Type' => 'application/xml'
+						'Accept' => 'text/plain'
 					),
 				)
 			);
@@ -76,13 +82,11 @@
 				wp_get_current_user();
 
 			//Retrieve session from WordPress user meta
-			$session = get_user_meta( $user->ID, self::META_SESSION, true );
+			$session = \GTO\Framework\Util\User::get_user_transient( $user->ID, self::TRANSIENT_SESSION );
 
 			//Return session ID if session is valid
-			if ( $session && $session instanceof \Ekko\Core\Services\HubSession ) {
-				if ( $session->valid() )
-					return $session->session;
-			}
+			if ( $session && $session !== false )
+				return $session;
 
 			//Session was not valid, fetch a new session ID from the Ekko Hub
 			$err_code = null;
@@ -92,16 +96,28 @@
 				\Ekko\Core\Services\TheKey::singleton()->cas_client()->retrievePT( $this->get_service(), $err_code, $err_msg );
 
 			$response = wp_remote_post(
-				$this->vnsprintf( self::ENDPOINT_LOGIN, array( 'hub' => \Ekko\URI_HUB ) ),
-				array( 'body' => array( 'ticket' => $ticket ) )
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_LOGIN, array( 'hub' => \Ekko\URI_HUB ) ),
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Accept' => 'application/json',
+					),
+					'body'        => array( 'ticket' => $ticket )
+				)
 			);
-			$session  = new HubSession( $response[ 'body' ] );
+			if ( $this->is_response_OK( $response ) && $json = json_decode( $response[ 'body' ], true ) ) {
+				//Store the new Session into the WordPress user meta
+				\GTO\Framework\Util\User::set_user_transient(
+					$user->ID,
+					self::TRANSIENT_SESSION,
+					$json[ 'id' ],
+					5 * \HOUR_IN_SECONDS
+				);
 
-			//Store the new Session into the WordPress user meta
-			update_user_meta( $user->ID, self::META_SESSION, $session );
-
-			//Return the Session ID
-			return $session->session;
+				//Return the Session ID
+				return $session;
+			}
+			return false;
 		}
 
 		/**
@@ -109,6 +125,8 @@
 		 *
 		 * @param string      $manifest
 		 * @param string|null $session
+		 *
+		 * @return string|false Course ID
 		 */
 		public function create_course( $manifest, $session = null ) {
 			$params   = array(
@@ -116,19 +134,20 @@
 				'session' => ( $session ) ? $session : $this->get_session(),
 			);
 			$response = wp_remote_post(
-				$this->vnsprintf( self::ENDPOINT_CREATE_COURSE, $params ),
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_CREATE_COURSE, $params ),
 				array(
 					'redirection' => 0,
 					'headers'     => array(
-						'Content-Type' => 'application/xml'
+						'Content-Type' => 'application/xml',
+						'Accept'       => 'application/xml',
 					),
 					'body'        => $manifest
 				)
 			);
-			$dom      = $this->parse_xml_to_domdoc( $response[ 'body' ] );
+			$dom      = \GTO\Framework\Util\XML::parse_xml_to_domdoc( $response[ 'body' ] );
 			if ( $dom )
 				return $dom->documentElement->getAttribute( 'id' );
-			false;
+			return false;
 		}
 
 		/**
@@ -142,18 +161,19 @@
 		 * @param string|null $session
 		 */
 		public function update_course( $course_id, $manifest, $session = null ) {
-			$params   = array(
+			$params = array(
 				'hub'     => \Ekko\URI_HUB,
 				'session' => ( $session ) ? $session : $this->get_session(),
 				'course'  => $course_id,
 			);
-			$response = wp_remote_request(
-				$this->vnsprintf( self::ENDPOINT_UPDATE_COURSE, $params ),
+			wp_remote_request(
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_UPDATE_COURSE, $params ),
 				array(
 					'method'      => 'PUT',
 					'redirection' => 0,
 					'headers'     => array(
-						'Content-Type' => 'application/xml'
+						'Content-Type' => 'application/xml',
+						'Accept'       => 'application/xml',
 					),
 					'body'        => $manifest
 				)
@@ -167,18 +187,18 @@
 		 * @param string|null $session
 		 */
 		public function delete_course( $course_id, $session = null ) {
-			$params   = array(
+			$params = array(
 				'hub'     => \Ekko\URI_HUB,
 				'session' => ( $session ) ? $session : $this->get_session(),
 				'course'  => $course_id,
 			);
-			$response = wp_remote_request(
-				$this->vnsprintf( self::ENDPOINT_DELETE_COURSE, $params ),
+			wp_remote_request(
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_DELETE_COURSE, $params ),
 				array(
 					'method'      => 'DELETE',
 					'redirection' => 0,
 					'headers'     => array(
-						'Content-Type' => 'application/xml'
+						'Accept' => 'application/xml'
 					),
 				)
 			);
@@ -205,23 +225,26 @@
 				CURLOPT_INFILE         => $file_stream,
 				CURLOPT_INFILESIZE     => filesize( $file ),
 				CURLOPT_CUSTOMREQUEST  => 'POST',
-				CURLOPT_URL            => $this->vnsprintf( self::ENDPOINT_RESOURCES, $params ),
+				CURLOPT_URL            => \GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_RESOURCES, $params ),
 				CURLOPT_RETURNTRANSFER => 1,
 				CURLOPT_FOLLOWLOCATION => false,
 				CURLOPT_HTTPHEADER     => array( 'Content-Type: ' . $type ),
 			) );
-			$response = curl_exec( $ch );
+			curl_exec( $ch );
 			fclose( $file_stream );
 			curl_close( $ch );
 		}
 
 		/**
-		 * Get a list of resource sha1 hashes for currently uploaded resources
+		 * Get a list of resources currently in use for the course
 		 *
 		 * @param string      $course_id
 		 * @param string|null $session
 		 *
-		 * @return array
+		 * @return array $resources {
+		 * @type array        $files  file sha1 hashes
+		 * @type array        $videos video ids
+		 * }
 		 */
 		public function get_resources( $course_id, $session = null ) {
 			$params    = array(
@@ -230,20 +253,23 @@
 				'course'  => $course_id,
 			);
 			$response  = wp_remote_get(
-				$this->vnsprintf( self::ENDPOINT_RESOURCES, $params ),
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_RESOURCES, $params ),
 				array(
 					'redirection' => 0,
 					'headers'     => array(
-						'Content-Type' => 'application/xml'
+						'Accept' => 'application/xml'
 					),
 				)
 			);
-			$dom       = $this->parse_xml_to_domdoc( $response[ 'body' ] );
-			$resources = array();
+			$dom       = \GTO\Framework\Util\XML::parse_xml_to_domdoc( $response[ 'body' ] );
+			$resources = array( 'files' => array(), 'videos' => array() );
 			if ( $dom ) {
-				$xpath = $this->xpath_parser( $dom );
-				foreach ( $xpath->query( '/hub:resources/hub:resource/@sha1' ) as $sha1 ) {
-					$resources[ ] = $sha1->value;
+				$xpath = $this->ekko_xpath_parser( $dom );
+				foreach ( $xpath->query( '/hub:resources/hub:file/@sha1' ) as $sha1 ) {
+					$resources[ 'files' ][ ] = $sha1->value;
+				}
+				foreach ( $xpath->query( '/hub:resources/hub:video/@id' ) as $video_id ) {
+					$resources[ 'videos' ][ ] = "{$video_id->value}";
 				}
 			}
 			return $resources;
@@ -264,20 +290,20 @@
 				'course'  => $course_id,
 			);
 			$response = wp_remote_post(
-				$this->vnsprintf( self::ENDPOINT_PUBLISH_COURSE, $params ),
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_PUBLISH_COURSE, $params ),
 				array(
 					'redirection' => 0,
 					'headers'     => array(
-						'Content-Type' => 'application/xml'
+						'Accept' => 'application/xml'
 					),
 				)
 			);
 			if ( $response[ 'response' ][ 'code' ] == 200 )
 				return true;
-			$dom    = $this->parse_xml_to_domdoc( $response[ 'body' ] );
+			$dom    = \GTO\Framework\Util\XML::parse_xml_to_domdoc( $response[ 'body' ] );
 			$errors = array();
 			if ( $dom ) {
-				$xpath = $this->xpath_parser( $dom );
+				$xpath = $this->ekko_xpath_parser( $dom );
 				foreach ( $xpath->query( '/hub:errors/hub:error/@message' ) as $error ) {
 					$errors[ ] = $error->value;
 				}
@@ -302,11 +328,12 @@
 				'course'  => $course_id,
 			);
 			$response = wp_remote_get(
-				$this->vnsprintf( self::ENDPOINT_SETTINGS, $params ),
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_SETTINGS, $params ),
 				array(
 					'redirection' => 0,
 					'headers'     => array(
-						'Content-Type' => 'application/json'
+						'Content-Type' => 'application/json',
+						'Accept'       => 'application/json',
 					),
 				)
 			);
@@ -332,11 +359,12 @@
 				'course'  => $course_id,
 			);
 			$response = wp_remote_post(
-				$this->vnsprintf( self::ENDPOINT_SETTINGS, $params ),
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_SETTINGS, $params ),
 				array(
 					'redirection' => 0,
 					'headers'     => array(
-						'Content-Type' => 'application/x-www-form-urlencoded'
+						'Content-Type' => 'application/x-www-form-urlencoded',
+						'Accept'       => 'application/json',
 					),
 					'body'        => $settings,
 				)
@@ -363,18 +391,17 @@
 				'course'  => $course_id,
 			);
 			$response = wp_remote_get(
-				$this->vnsprintf( $endpoint, $params ),
+				\GTO\Framework\Util\String::vnsprintf( $endpoint, $params ),
 				array(
 					'redirection' => 0,
 					'headers'     => array(
-						'Content-Type' => 'application/xml',
-						'Accept'       => 'application/xml',
+						'Accept' => 'application/xml',
 					),
 				)
 			);
 			$users    = array();
-			if ( $dom = $this->parse_xml_to_domdoc( $response[ 'body' ] ) ) {
-				$xpath = $this->xpath_parser( $dom );
+			if ( $dom = \GTO\Framework\Util\XML::parse_xml_to_domdoc( $response[ 'body' ] ) ) {
+				$xpath = $this->ekko_xpath_parser( $dom );
 				foreach ( $xpath->query( '/hub:users/hub:user/@guid' ) as $guid ) {
 					$users[ ] = strtolower( $guid->value );
 				}
@@ -416,12 +443,12 @@
 			if ( empty( $users ) )
 				return;
 
-			$response = wp_remote_post(
-				$this->vnsprintf( $endpoint, $params ),
+			wp_remote_post(
+				\GTO\Framework\Util\String::vnsprintf( $endpoint, $params ),
 				array(
 					'redirection' => 0,
 					'headers'     => array(
-						'Content-Type' => 'application/x-www-form-urlencoded'
+						'Content-Type' => 'application/x-www-form-urlencoded',
 					),
 					'body'        => implode( '&', $users ),
 				)
@@ -505,44 +532,241 @@
 		}
 
 		/**
-		 * Format ENDPOINT URLs with named parameters
+		 * Get Ekko Cloud Videos list
 		 *
-		 * @param string $format
-		 * @param array  $args
+		 * @param $options
 		 *
-		 * @return string
+		 * @return array
 		 */
-		private function vnsprintf( $format, $args ) {
-			$names = preg_match_all( '/%\((.*?)\)/', $format, $matches, PREG_SET_ORDER );
-
-			$values = array();
-			foreach ( $matches as $match ) {
-				$values[ ] = $args[ $match[ 1 ] ];
+		public function get_videos( $options = array() ) {
+			$url      = add_query_arg(
+				$options,
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_GET_VIDEOS, array(
+					'hub'    => \Ekko\URI_HUB,
+					'apikey' => \Ekko\HUB_API_KEY,
+				) )
+			);
+			$response = wp_remote_get( $url,
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Accept' => 'application/json',
+					),
+				)
+			);
+			if ( $this->is_response_OK( $response ) && array_key_exists( 'body', $response ) ) {
+				$data = json_decode( $response[ 'body' ], true );
+				if ( null !== $data ) {
+					if ( ! array_key_exists( 'videos', $data ) )
+						$data[ 'videos' ] = array();
+					return $data;
+				}
 			}
-
-			$format = preg_replace( '/%\((.*?)\)/', '%', $format );
-			return vsprintf( $format, $values );
+			return array();
 		}
 
 		/**
-		 * Parses an xml string into a DOMDocument
+		 * Create a new Ekko Cloud Video
 		 *
-		 * @param string $xml
+		 * Returns the ID of the new video record
 		 *
-		 * @return \DOMDocument|false DomDocument on success or false
+		 * @param string $title
+		 * @param string $group
+		 *
+		 * @return array|false
 		 */
-		private function parse_xml_to_domdoc( $xml ) {
-			$dom = new \DOMDocument( '1.0', 'UTF-8' );
-			set_error_handler( function ( $error, $error_string ) {
-				if ( $error === E_WARNING && stripos( $error_string, "DOMDocument::loadXML()" ) !== false ) {
+		public function create_video( $title, $group ) {
+			$params   = array(
+				'hub'    => \Ekko\URI_HUB,
+				'apikey' => \Ekko\HUB_API_KEY,
+			);
+			$response = wp_remote_post(
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_CREATE_VIDEO, $params ),
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Content-Type' => 'application/x-www-form-urlencoded',
+						'Accept'       => 'application/json',
+					),
+					'body'        => array(
+						'title' => $title,
+						'group' => $group,
+					),
+				)
+			);
+			if ( $this->is_response_OK( $response ) && array_key_exists( 'body', $response ) ) {
+				return json_decode( $response[ 'body' ], true );
+			}
+			return false;
+		}
+
+		/**
+		 * Inform Ekko Cloud Video system that the video has been uploaded and processing can begin
+		 *
+		 * @param string $video_id
+		 * @param string $key
+		 * @param string $bucket
+		 *
+		 * @return array|false
+		 */
+		public function process_video( $video_id, $key, $bucket ) {
+			$params   = array(
+				'hub'    => \Ekko\URI_HUB,
+				'apikey' => \Ekko\HUB_API_KEY,
+				'video'  => "{$video_id}",
+			);
+			$response = wp_remote_post(
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_PROCESS_VIDEO, $params ),
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Content-Type' => 'application/x-www-form-urlencoded',
+						'Accept'       => 'application/json',
+					),
+					'body'        => array(
+						's3_bucket'        => $bucket,
+						's3_key'           => $key,
+						's3_delete_source' => 'true',
+					),
+				)
+			);
+			if ( $this->is_response_OK( $response ) && array_key_exists( 'body', $response ) ) {
+				return json_decode( $response[ 'body' ], true );
+			}
+			return false;
+		}
+
+		/**
+		 * Get a video by ID
+		 *
+		 * @param $video_id
+		 * @param $group
+		 *
+		 * @return array|false
+		 */
+		public function get_video( $video_id, $group ) {
+			$url      = add_query_arg(
+				array( 'group' => $group ),
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_GET_VIDEO, array(
+					'hub'    => \Ekko\URI_HUB,
+					'apikey' => \Ekko\HUB_API_KEY,
+					'video'  => "{$video_id}",
+				) )
+			);
+			$response = wp_remote_get( $url,
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Accept' => 'application/json',
+					),
+				)
+			);
+			if ( $this->is_response_OK( $response ) && array_key_exists( 'body', $response ) ) {
+				return (array)json_decode( $response[ 'body' ], true );
+			}
+			return false;
+		}
+
+		/**
+		 * @param $video_id
+		 * @param $group
+		 *
+		 * @return array|false
+		 */
+		public function delete_video( $video_id, $group ) {
+			$url      = add_query_arg(
+				array( 'group' => $group ),
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_DELETE_VIDEO, array(
+					'hub'    => \Ekko\URI_HUB,
+					'apikey' => \Ekko\HUB_API_KEY,
+					'video'  => "{$video_id}",
+				) )
+			);
+			$response = wp_remote_request(
+				$url,
+				array(
+					'method'  => 'DELETE',
+					'headers' => array(
+						'Accept' => 'application/json',
+					),
+				)
+			);
+			if ( $response && $response[ 'code' ] == 200 )
+				return true;
+			return false;
+		}
+
+		/**
+		 * Add or remove authorized Courses for a Video
+		 *
+		 * @param int   $video_id
+		 * @param array $add
+		 * @param array $remove
+		 */
+		public function update_video_courses( $video_id, array $add = array(), array $remove = array() ) {
+			$params = array(
+				'hub'    => \Ekko\URI_HUB,
+				'apikey' => \Ekko\HUB_API_KEY,
+				'video'  => "{$video_id}",
+			);
+
+			$courses = array_merge(
+				array_map( function ( $course_id ) {
+					return 'add=' . rawurlencode( $course_id );
+				}, $add ),
+				array_map( function ( $course_id ) {
+					return 'remove=' . rawurlencode( $course_id );
+				}, $remove )
+			);
+
+			if ( empty( $courses ) )
+				return;
+
+			wp_remote_post(
+				\GTO\Framework\Util\String::vnsprintf( self::ENDPOINT_VIDEO_COURSES, $params ),
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Content-Type' => 'application/x-www-form-urlencoded',
+					),
+					'body'        => implode( '&', $courses ),
+				)
+			);
+		}
+
+		/**
+		 * Authorize a course to use a video
+		 *
+		 * @param int $video_id
+		 * @param int $course_id
+		 */
+		public function add_course_to_video( $video_id, $course_id ) {
+			$this->update_video_courses( $video_id, array( "{$course_id}" ) );
+		}
+
+		/**
+		 * De-authorize a courses use of a video
+		 *
+		 * @param int $video_id
+		 * @param int $course_id
+		 */
+		public function remove_course_from_video( $video_id, $course_id ) {
+			$this->update_video_courses( $video_id, array(), array( "{$course_id}" ) );
+		}
+
+		/**
+		 * Is the HTTP response successful
+		 *
+		 * @param array $response
+		 *
+		 * @return bool
+		 */
+		private function is_response_OK( $response ) {
+			if ( $response && ! is_wp_error( $response ) ) {
+				$code = (int)$response[ 'response' ][ 'code' ];
+				if ( 200 <= $code || 300 > $code )
 					return true;
-				}
-				return false;
-			} );
-			$res = $dom->loadXML( $xml );
-			restore_error_handler();
-			if ( $res )
-				return $dom;
+			}
 			return false;
 		}
 
@@ -553,11 +777,11 @@
 		 *
 		 * @return \DOMXPath
 		 */
-		private function xpath_parser( $dom ) {
-			$xpath = new \DOMXPath( $dom );
-			$xpath->registerNamespace( 'hub', \Ekko\XMLNS_HUB );
-			$xpath->registerNamespace( 'ekko', \Ekko\XMLNS_MANIFEST );
-			return $xpath;
+		private function ekko_xpath_parser( $dom ) {
+			return \GTO\Framework\Util\XML::xpath_parser( $dom, array(
+				'hub'  => \Ekko\XMLNS_HUB,
+				'ekko' => \Ekko\XMLNS_MANIFEST,
+			) );
 		}
 	}
 }

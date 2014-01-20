@@ -10,7 +10,7 @@
 
 		const ENROLLMENT_COLUMN = 'enrollment';
 
-		public $students_list;
+		public static $enrollment_list;
 
 		final protected function __construct() {
 			$course_post_type = \Ekko\Core\CoursePostType::singleton()->post_type();
@@ -20,11 +20,16 @@
 			add_action( "manage_{$course_post_type}_posts_custom_column", array( &$this, 'manage_posts_custom_column' ), 10, 2 );
 
 			add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts' ), 10, 1 );
-			add_submenu_page( 'edit.php?post_type=ekko-course', __( 'Manage Course Enrollment', \Ekko\TEXT_DOMAIN ), null, 'edit_posts', 'ekko-enrollment', array( &$this, 'display_page' ) );
 
+			add_submenu_page( null, __( 'Manage Course Enrollment', \Ekko\TEXT_DOMAIN ), 'Enrollment', 'edit_posts', 'ekko-enrollment', array( &$this, 'display_page' ) );
+
+			add_action( 'load-ekko-course_page_ekko-enrollment', array( &$this, 'init_students_list' ), 0, 0 );
 			add_action( 'load-ekko-course_page_ekko-enrollment', array( &$this, 'save_changes' ), 10, 0 );
+		}
 
-			$this->students_list = new \Ekko\Core\Tables\EnrolledStudentsListTable();
+		final public function init_students_list() {
+			$this->enrollment_list = new \Ekko\Core\Tables\EnrollmentListTable();
+
 		}
 
 		final public function enqueue_scripts( $hook_suffix ) {
@@ -87,7 +92,7 @@
 		final public function save_changes() {
 			$post   = get_post( $_REQUEST[ 'post' ] );
 			$course = \Ekko\Core\CoursePostType::singleton()->get_course( $post );
-			switch ( $this->students_list->current_action() ) {
+			switch ( $this->enrollment_list->current_action() ) {
 				case 'enrollment-type':
 					check_admin_referer( 'enrollment-type', '_wpnonce_enrollment-type' );
 					$enrollment_type = stripslashes( $_POST[ 'enrollment-type' ] );
@@ -104,7 +109,7 @@
 		}
 
 		final public function display_page() {
-			$this->students_list->prepare_items();
+			$this->enrollment_list->prepare_items();
 			$post   = get_post( $_REQUEST[ 'post' ] );
 			$course = \Ekko\Core\CoursePostType::singleton()->get_course( $post );
 			?>
@@ -126,7 +131,7 @@
 
 							<form id="posts-filter" action="" method="post">
 								<input type="hidden" name="page" value="<?php echo $_REQUEST[ 'page' ] ?>" />
-								<?php $this->students_list->display(); ?>
+								<?php $this->enrollment_list->display(); ?>
 								<br class="clear" />
 							</form>
 						</div>

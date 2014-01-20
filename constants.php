@@ -10,7 +10,7 @@
 	 * Ekko Plugin Version
 	 * @var string
 	 */
-	const VERSION = '0.1';
+	const VERSION = '0.3';
 
 	/**
 	 * Ekko XML Namespace - Manifest
@@ -23,12 +23,6 @@
 	 * @var string
 	 */
 	const XMLNS_HUB = 'https://ekkoproject.org/hub';
-
-	/**
-	 * Ekko Hub URI
-	 * @var string
-	 */
-	const URI_HUB = 'https://servicesdev.gcx.org/ekko/';
 
 	/**
 	 * Plugin URL

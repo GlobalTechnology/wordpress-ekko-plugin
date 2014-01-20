@@ -1,152 +1,135 @@
-# Copyright (C) 2013 Ekko
+# Copyright (C) 2014 Ekko
 # This file is distributed under the same license as the Ekko package.
 msgid ""
 msgstr ""
-"Project-Id-Version: Ekko 0.1\n"
+"Project-Id-Version: Ekko 0.3\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/ekko\n"
-"POT-Creation-Date: 2013-06-19 20:21:02+00:00\n"
+"POT-Creation-Date: 2014-01-20 19:13:01+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2013-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2014-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 
-#: core/course-post-type.php:23
+#: core/course-post-type.php:51
 msgid "Courses"
 msgstr ""
 
-#: core/course-post-type.php:24
+#: core/course-post-type.php:52
 msgid "Course"
 msgstr ""
 
-#: core/course-post-type.php:26
+#: core/course-post-type.php:54
 msgid "Add New Course"
 msgstr ""
 
-#: core/course-post-type.php:27
+#: core/course-post-type.php:55
 msgid "Edit Course"
 msgstr ""
 
-#: core/course-post-type.php:28
+#: core/course-post-type.php:56
 msgid "New Course"
 msgstr ""
 
-#: core/course-post-type.php:29
+#: core/course-post-type.php:57
 msgid "View Course"
 msgstr ""
 
-#: core/course-post-type.php:30
+#: core/course-post-type.php:58
 msgid "Search Courses"
 msgstr ""
 
-#: core/course-post-type.php:31
+#: core/course-post-type.php:59
 msgid "No Courses Found"
 msgstr ""
 
-#: core/course-post-type.php:32
+#: core/course-post-type.php:60
 msgid "No Courses found in Trash"
 msgstr ""
 
-#: core/course-post-type.php:33
+#: core/course-post-type.php:61
 msgid "Parent Course:"
 msgstr ""
 
-#: core/course-post-type.php:34
+#: core/course-post-type.php:62
 msgid "All Courses"
 msgstr ""
 
-#. #-#-#-#-#  ekko.pot (Ekko 0.1)  #-#-#-#-#
+#. #-#-#-#-#  ekko.pot (Ekko 0.3)  #-#-#-#-#
 #. Plugin Name of the plugin/theme
-#: core/course-post-type.php:35
+#: core/course-post-type.php:63
 msgid "Ekko"
 msgstr ""
 
-#: core/course-post-type.php:41
+#: core/course-post-type.php:69
 msgid "Ekko Courses"
 msgstr ""
 
-#: core/course-post-type.php:55
+#: core/course-post-type.php:91
 msgid "Enter course title here"
 msgstr ""
 
-#: core/course-post-type.php:98
+#: core/course-post-type.php:153
+msgid "Lessons"
+msgstr ""
+
+#: core/course-post-type.php:154
+msgid "Quizzes"
+msgstr ""
+
+#: core/managers/cloud-manager.php:85
 msgid "Set banner image"
 msgstr ""
 
-#: core/course-post-type.php:99
+#: core/managers/cloud-manager.php:86
 msgid "Set Banner Image"
 msgstr ""
 
-#: core/course-post-type.php:100 templates/course-template.php:107
+#: core/managers/cloud-manager.php:87 templates/course-template.php:109
 msgid "Add Media"
 msgstr ""
 
-#: core/course-post-type.php:101
+#: core/managers/cloud-manager.php:88
 msgid "Add media"
 msgstr ""
 
-#: core/course-post-type.php:102
+#: core/managers/cloud-manager.php:89
 msgid "Select a Thumbnail Image"
 msgstr ""
 
-#: core/course-post-type.php:103
+#: core/managers/cloud-manager.php:90
 msgid "YouTube"
 msgstr ""
 
-#: core/course-post-type.php:104
+#: core/managers/cloud-manager.php:91
 msgid "Vimeo"
 msgstr ""
 
-#: core/course-post-type.php:137
-msgid "Publish to Ekko"
-msgstr ""
-
-#: core/course-post-type.php:143
-msgid "Publish Course to EKKO"
-msgstr ""
-
-#: core/course-post-type.php:148
-msgid "Cheatin&#8217; uh?"
-msgstr ""
-
-#: core/course-post-type.php:152
-msgid "Publishing Course to EKKO"
-msgstr ""
-
-#: core/course-post-type.php:155
-msgid "Publishing"
-msgstr ""
-
-#: core/course-post-type.php:164
-msgid "Course manifest updated"
-msgstr ""
-
-#: core/course-post-type.php:169
-msgid "Uploading Media"
-msgstr ""
-
-#: core/course-post-type.php:182
-msgid "One or more Errors occured during publish"
-msgstr ""
-
-#: core/course-post-type.php:189
-msgid "Course successfully published!"
-msgstr ""
-
-#: core/course-post-type.php:205
-msgid "Return to Courses page"
-msgstr ""
-
-#: core/metaboxes/banner-metabox.php:20
+#: core/metaboxes/banner-metabox.php:21
 msgid "Banner"
 msgstr ""
 
-#: core/metaboxes/banner-metabox.php:23
+#: core/metaboxes/banner-metabox.php:24
 msgid "Set Banner"
 msgstr ""
 
-#: core/metaboxes/course-creator-metabox.php:32
+#: core/metaboxes/complete-metabox.php:28
+msgid "Course Completed"
+msgstr ""
+
+#: core/metaboxes/complete-metabox.php:36
+#: core/metaboxes/course-meta-metabox.php:28 templates/course-template.php:8
+#: templates/course-template.php:57 templates/course-template.php:102
+#: templates/course-template.php:156 templates/course-template.php:175
+msgid "click to toggle"
+msgstr ""
+
+#: core/metaboxes/complete-metabox.php:39
+msgid "Course Complete"
+msgstr ""
+
+#: core/metaboxes/course-creator-metabox.php:31
 msgid "Course Content"
 msgstr ""
 
@@ -155,63 +138,177 @@ msgctxt "add lesson button"
 msgid "Lesson"
 msgstr ""
 
-#: core/metaboxes/course-creator-metabox.php:35
+#: core/metaboxes/course-creator-metabox.php:36
 msgctxt "add quiz button"
 msgid "Quiz"
 msgstr ""
 
-#: core/metaboxes/course-meta-metabox.php:24 templates/course-template.php:8
-#: templates/course-template.php:56 templates/course-template.php:100
-#: templates/course-template.php:148 templates/course-template.php:166
-msgid "click to toggle"
-msgstr ""
-
-#: core/metaboxes/course-meta-metabox.php:27
+#: core/metaboxes/course-meta-metabox.php:31
 msgctxt "input label"
-msgid "Description"
-msgstr ""
-
-#: core/metaboxes/course-meta-metabox.php:33
-msgctxt "input placeholder"
 msgid "Description"
 msgstr ""
 
 #: core/metaboxes/course-meta-metabox.php:37
+msgctxt "input placeholder"
+msgid "Description"
+msgstr ""
+
+#: core/metaboxes/course-meta-metabox.php:41
 msgctxt "input label"
 msgid "Author"
 msgstr ""
 
-#: core/metaboxes/course-meta-metabox.php:39
+#: core/metaboxes/course-meta-metabox.php:43
 msgctxt "input placeholder"
 msgid "Name"
 msgstr ""
 
-#: core/metaboxes/course-meta-metabox.php:40
+#: core/metaboxes/course-meta-metabox.php:44
 msgctxt "input placeholder"
 msgid "Email"
 msgstr ""
 
-#: core/metaboxes/course-meta-metabox.php:41
+#: core/metaboxes/course-meta-metabox.php:45
 msgctxt "input placeholder"
 msgid "URL"
 msgstr ""
 
-#: core/metaboxes/course-meta-metabox.php:49
+#: core/metaboxes/course-meta-metabox.php:53
 msgctxt "input label"
 msgid "Copyright"
 msgstr ""
 
-#: core/metaboxes/course-meta-metabox.php:53
+#: core/metaboxes/course-meta-metabox.php:57
 msgctxt "input placeholder"
 msgid "Copyright"
 msgstr ""
 
-#: core/metaboxes/save-metabox.php:17
+#: core/metaboxes/save-metabox.php:18
 msgid "Options"
 msgstr ""
 
-#: core/metaboxes/save-metabox.php:23
+#: core/metaboxes/save-metabox.php:24
 msgid "Save"
+msgstr ""
+
+#: core/metaboxes/save-metabox.php:27
+msgid "Publish"
+msgstr ""
+
+#: core/pages/enrollment-page.php:24
+msgid "Manage Course Enrollment"
+msgstr ""
+
+#: core/pages/enrollment-page.php:51 core/pages/enrollment-page.php:120
+msgid "Enrollment"
+msgstr ""
+
+#: core/pages/enrollment-page.php:72
+msgid "Public"
+msgstr ""
+
+#: core/pages/enrollment-page.php:75
+msgid "Open Enrollment"
+msgstr ""
+
+#: core/pages/enrollment-page.php:78
+msgid "Approval Needed"
+msgstr ""
+
+#: core/pages/enrollment-page.php:81
+msgid "Instructor Managed"
+msgstr ""
+
+#: core/pages/enrollment-page.php:87
+msgid "Students"
+msgstr ""
+
+#: core/pages/enrollment-page.php:144
+msgid "Enrollment Type"
+msgstr ""
+
+#: core/pages/enrollment-page.php:154
+msgctxt "enrollment type"
+msgid "Public"
+msgstr ""
+
+#: core/pages/enrollment-page.php:156
+msgid "Anyone may take this course without enrolling."
+msgstr ""
+
+#: core/pages/enrollment-page.php:163
+msgctxt "enrollment type"
+msgid "Open Enrollment"
+msgstr ""
+
+#: core/pages/enrollment-page.php:165
+msgid "Students may enroll in this course."
+msgstr ""
+
+#: core/pages/enrollment-page.php:172
+msgctxt "enrollment type"
+msgid "Approval Needed"
+msgstr ""
+
+#: core/pages/enrollment-page.php:174
+msgid "Students must request enrollment and be approved by instructors."
+msgstr ""
+
+#: core/pages/enrollment-page.php:181
+msgctxt "enrollment type"
+msgid "Instructor Managed"
+msgstr ""
+
+#: core/pages/enrollment-page.php:183
+msgid "Instructors will manage enrollment of students."
+msgstr ""
+
+#: core/pages/enrollment-page.php:186
+msgid "Update Enrollment Type"
+msgstr ""
+
+#: core/pages/publish-page.php:12
+msgid "Publish Course to EKKO"
+msgstr ""
+
+#: core/pages/publish-page.php:25
+msgid "Cheatin&#8217; uh?"
+msgstr ""
+
+#: core/pages/publish-page.php:65 core/pages/publish-page.php:67
+msgid "Publish to Ekko"
+msgstr ""
+
+#: core/pages/publish-page.php:81
+msgid "Publish Course"
+msgstr ""
+
+#: core/pages/publish-page.php:94
+msgid "Updating Course Manifest."
+msgstr ""
+
+#: core/pages/publish-page.php:99
+msgid "Processing Course Media:"
+msgstr ""
+
+#: core/pages/publish-page.php:124
+msgid "Course successfully published!"
+msgstr ""
+
+#: core/pages/publish-page.php:127
+msgid "One or more Errors occured during publish"
+msgstr ""
+
+#: core/pages/video-page.php:12 core/pages/video-page.php:53
+msgid "Ekko Cloud Videos"
+msgstr ""
+
+#: core/pages/video-page.php:13
+msgid "Cloud Videos"
+msgstr ""
+
+#: core/services/hub.php:312
+msgid "Unknown Error"
 msgstr ""
 
 #: templates/course-template.php:12
@@ -227,73 +324,106 @@ msgstr ""
 msgid "Remove Lesson"
 msgstr ""
 
-#: templates/course-template.php:60
+#: templates/course-template.php:61
 msgid "Quiz"
 msgstr ""
 
-#: templates/course-template.php:64
+#: templates/course-template.php:65
 msgctxt "quiz title placeholder"
 msgid "Title"
 msgstr ""
 
-#: templates/course-template.php:73 templates/course-template.php:169
+#: templates/course-template.php:74 templates/course-template.php:178
 msgid "Multiple Choice"
 msgstr ""
 
-#: templates/course-template.php:75
+#: templates/course-template.php:76 templates/media-template.php:53
 msgid "Remove"
 msgstr ""
 
-#: templates/course-template.php:103
+#: templates/course-template.php:105
 msgid "Media"
 msgstr ""
 
-#: templates/course-template.php:127
+#: templates/course-template.php:111 templates/course-template.php:134
 msgid "Image"
 msgstr ""
 
-#: templates/course-template.php:130
+#: templates/course-template.php:112 templates/course-template.php:137
 msgid "Video"
 msgstr ""
 
-#: templates/course-template.php:133
+#: templates/course-template.php:140
 msgid "Audio"
 msgstr ""
 
-#: templates/course-template.php:138
+#: templates/course-template.php:145
 msgid "thumbnail"
 msgstr ""
 
-#: templates/course-template.php:139 templates/course-template.php:185
-#: templates/course-template.php:209
+#: templates/course-template.php:146 templates/course-template.php:194
+#: templates/course-template.php:218
 msgid "remove"
 msgstr ""
 
-#: templates/course-template.php:151
+#: templates/course-template.php:159
 msgid "Text"
 msgstr ""
 
-#: templates/course-template.php:173
+#: templates/course-template.php:182
 msgctxt "question placeholder"
 msgid "Question?"
 msgstr ""
 
-#: templates/course-template.php:180
+#: templates/course-template.php:189
 msgctxt "add option button"
 msgid "Option"
 msgstr ""
 
-#: templates/course-template.php:197
+#: templates/course-template.php:206
 msgid "Option"
 msgstr ""
 
-#: templates/course-template.php:201
+#: templates/course-template.php:210
 msgctxt "multiple question choice placeholder"
 msgid "Choice"
 msgstr ""
 
+#: templates/media-template.php:7
+msgid "Drop videos to upload to Ekko Cloud"
+msgstr ""
+
+#: templates/media-template.php:18
+msgid ""
+"The web browser on your device cannot be used to upload files. You may be "
+"able to use the <a href=\"%s\">native app for your device</a> instead."
+msgstr ""
+
+#: templates/media-template.php:21
+msgid "Drop video files anywhere to upload"
+msgstr ""
+
+#: templates/media-template.php:22
+msgid "Select Files"
+msgstr ""
+
+#: templates/media-template.php:27
+msgid "Maximum upload file size: 1GB."
+msgstr ""
+
+#: templates/media-template.php:57
+msgid "Deselect"
+msgstr ""
+
+#. #-#-#-#-#  ekko.pot (Ekko 0.3)  #-#-#-#-#
+#. Plugin URI of the plugin/theme
+#. #-#-#-#-#  ekko.pot (Ekko 0.3)  #-#-#-#-#
+#. Author URI of the plugin/theme
+msgid "ekkomobile.com"
+msgstr ""
+
 #. Description of the plugin/theme
-msgid "Ekko - mLearning - eDisciple"
+msgid "Ekko Course Creator and Content Management"
 msgstr ""
 
 #. Author of the plugin/theme

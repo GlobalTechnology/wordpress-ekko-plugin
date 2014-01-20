@@ -62,6 +62,7 @@
 
 		/**
 		 * Creates a new User
+		 *
 		 * @param string $guid
 		 * @param array  $args
 		 *
@@ -164,7 +165,8 @@
 					),
 				)
 			);
-			$dom      = $this->parse_xml_to_domdoc( $response[ 'body' ] );
+
+			$dom = \GTO\Framework\Util\XML::parse_xml_to_domdoc( $response[ 'body' ] );
 			if ( $dom ) {
 				$attributes = array();
 				$xpath      = new \DOMXPath( $dom );
@@ -174,28 +176,6 @@
 				if ( count( $attributes ) > 0 )
 					return (object)$attributes;
 			}
-			return false;
-		}
-
-		/**
-		 * Parses an xml string into a DOMDocument
-		 *
-		 * @param string $xml
-		 *
-		 * @return \DOMDocument|false DomDocument on success or false
-		 */
-		private function parse_xml_to_domdoc( $xml ) {
-			$dom = new \DOMDocument( '1.0', 'UTF-8' );
-			set_error_handler( function ( $error, $error_string ) {
-				if ( $error === E_WARNING && stripos( $error_string, "DOMDocument::loadXML()" ) !== false ) {
-					return true;
-				}
-				return false;
-			} );
-			$res = $dom->loadXML( $xml );
-			restore_error_handler();
-			if ( $res )
-				return $dom;
 			return false;
 		}
 	}

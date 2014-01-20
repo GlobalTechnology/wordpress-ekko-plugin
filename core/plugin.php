@@ -40,7 +40,7 @@
 			add_action( 'plugins_loaded', array( &$this, 'load_textdomain' ), 10, 0 );
 
 			add_action( 'init', array( '\Ekko\Core\CoursePostType', 'singleton' ), 0, 0 );
-			add_action( 'init', array( &$this, 'add_ekko_image_sizes' ), 10, 0 );
+			add_action( 'init', array( &$this, 'add_ekko_image_sizes' ), 2, 0 );
 
 			add_action( 'set_user_role', array( &$this, 'user_role_changed' ), 5, 2 );
 			add_action( 'remove_user_from_blog', array( &$this, 'user_removed_from_blog' ), 10, 2 );
@@ -97,6 +97,7 @@
 		}
 
 		public function add_ekko_image_sizes() {
+			add_theme_support( 'post-thumbnails' );
 			add_image_size( 'ekko-thumbnail', 150, 84, true );
 			add_image_size( 'ekko-banner-thumbnail', 240, 135, true );
 			add_image_size( 'ekko-image', 1280, 720, true );
