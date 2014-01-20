@@ -10,7 +10,7 @@
 	 * Ekko Plugin Version
 	 * @var string
 	 */
-	const VERSION = '0.2';
+	const VERSION = '0.3';
 
 	/**
 	 * Ekko XML Namespace - Manifest
