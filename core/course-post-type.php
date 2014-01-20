@@ -77,6 +77,7 @@
 			add_action( 'admin_menu', array( '\Ekko\Core\Pages\VideoPage', 'singleton' ), 10, 0 );
 
 			add_action( 'admin_init', array( '\Ekko\Core\Managers\CloudManager', 'singleton' ), 0, 0 );
+			add_action( 'admin_init', array( '\Ekko\Core\Managers\ArclightManager', 'singleton' ), 0, 0 );
 
 			add_action( 'dbx_post_sidebar', array( &$this, 'course_templates' ), 10, 0 );
 			add_action( 'before_delete_post', array( &$this, 'delete_post' ), 10, 1 );
@@ -137,7 +138,10 @@
 				wp_enqueue_style( 'ekko-app' );
 				wp_enqueue_script( 'ekko-app' );
 				wp_enqueue_script( 'ecv-editor' );
+				//TODO Add Setting
+				wp_enqueue_script( 'jfm-videos' );
 			}
+
 		}
 
 		/**

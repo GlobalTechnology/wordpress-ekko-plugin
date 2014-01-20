@@ -120,6 +120,57 @@ window.ekko = window.ekko || {};
 			}
 		},
 
+		mirror: function ( collection ) {
+			if ( this.mirroring && this.mirroring === collection ) {
+				return this;
+			}
+
+			this.unmirror();
+			this.mirroring = collection;
+
+			// Clear the collection silently. A `reset` event will be fired
+			// when `observe()` calls `validateAll()`.
+			this.reset( [], { silent: true } );
+			this.observe( collection );
+
+			return this;
+		},
+
+		unmirror: function () {
+			if ( !this.mirroring ) {
+				return;
+			}
+
+			this.unobserve( this.mirroring );
+			delete this.mirroring;
+		},
+
+		more: function ( options ) {
+			var deferred = $.Deferred(),
+				mirroring = this.mirroring,
+				attachments = this;
+
+			if ( !mirroring || !mirroring.more ) {
+				return deferred.resolveWith( this ).promise();
+			}
+
+			// If we're mirroring another collection, forward `more` to
+			// the mirrored collection. Account for a race condition by
+			// checking if we're still mirroring that collection when
+			// the request resolves.
+			mirroring.more( options ).done( function () {
+				if ( this === attachments.mirroring ) {
+					deferred.resolveWith( this );
+				}
+			} );
+
+			return deferred.promise();
+		},
+
+		hasMore: function () {
+			return this.mirroring ? this.mirroring.hasMore() : false;
+		},
+
 		parse: function ( resp, xhr ) {
 			if ( !_.isArray( resp ) ) {
 				resp = [resp];

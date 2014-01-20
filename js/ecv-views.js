@@ -298,28 +298,45 @@
 					pattern: /https?:\/\/(www\.)?vimeo\.com\/.*/i
 				} )
 			] );
+
+			if ( jfm.controllers.ArclightLibrary ) {
+				console.log( 'Adding Arclight Media' );
+				this.states.add( [
+					new jfm.controllers.ArclightLibrary( {
+						priority: 40
+					} )
+				] );
+			}
 		},
 
 		bindHandlers: function () {
+//			this.on( 'all', function ( eventName ) {
+//				console.log( eventName );
+//			}, this );
 			wp.media.view.MediaFrame.Select.prototype.bindHandlers.apply( this, arguments );
 			this.on( 'menu:render:default', this.mainMenu, this );
+
 			this.on( 'toolbar:create:video-insert', this.createToolbar, this );
 			this.on( 'toolbar:create:main-oembed', this.createOEmbedToolbar, this );
 			this.on( 'toolbar:render:video-insert', this.videoInsertToolbar, this );
+
 			this.on( 'content:render:oembed', this.oembedContent, this );
+
+			this.on( 'content:create:arclight', this.arclightContent, this );
+			this.on( 'toolbar:create:arclight', this.arclightToolbar, this );
 		},
 
 		mainMenu: function ( view ) {
 			view.set( {
-				'library-separator':  new wp.media.View( {
+				'library-separator':   new wp.media.View( {
 					className: 'separator',
 					priority:  100
 				} ),
-				'library-separator2': new wp.media.View( {
+				'library-separator-2': new wp.media.View( {
 					className: 'separator',
 					priority:  250
 				} ),
-				'uploader-status':    new ekko.media.view.ECVUploaderStatus( {
+				'uploader-status':     new ekko.media.view.ECVUploaderStatus( {
 					className:  'upload-inline-status',
 					controller: this.controller,
 					priority:   300
@@ -377,6 +394,19 @@
 			} ) );
 		},
 
+		arclightContent: function( content ) {
+			var state = this.state();
+
+			this.$el.removeClass( 'hide-toolbar' );
+
+			content.view = new jfm.views.ArclightBrowser( {
+				controller: this,
+				collection: state.get( 'library' ),
+				selection:  state.get( 'selection' ),
+				model:      state
+			} );
+		},
+
 		videoInsertToolbar: function ( view ) {
 			var controller = this;
 
@@ -400,6 +430,12 @@
 			toolbar.view = new ekko.media.view.OEmbedToolbar( {
 				controller: this,
 				text:       "Blah Blah"
+			} );
+		},
+
+		arclightToolbar: function( toolbar ) {
+			toolbar.view = new jfm.views.ArclightVideoToolbar( {
+				controller: this
 			} );
 		}
 
