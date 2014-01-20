@@ -19,7 +19,7 @@
 		const ENDPOINT_DELETE_VIDEO   = '%(hub)s%(apikey)s/videos/video/%(video)s';
 		const ENDPOINT_VIDEO_COURSES  = '%(hub)s%(apikey)s/videos/video/%(video)s/courses';
 
-		const META_SESSION = 'ekko-hub-session';
+		const TRANSIENT_SESSION = 'hub-session';
 
 		/**
 		 * Singleton instance
@@ -82,13 +82,11 @@
 				wp_get_current_user();
 
 			//Retrieve session from WordPress user meta
-			$session = get_user_meta( $user->ID, self::META_SESSION, true );
+			$session = \GTO\Framework\Util\User::get_user_transient( $user->ID, self::TRANSIENT_SESSION );
 
 			//Return session ID if session is valid
-			if ( $session && $session instanceof \Ekko\Core\Services\HubSession ) {
-				if ( $session->valid() )
-					return $session->session;
-			}
+			if ( $session && $session !== false )
+				return $session;
 
 			//Session was not valid, fetch a new session ID from the Ekko Hub
 			$err_code = null;
@@ -102,18 +100,24 @@
 				array(
 					'redirection' => 0,
 					'headers'     => array(
-						'Accept' => 'text/plain',
+						'Accept' => 'application/json',
 					),
 					'body'        => array( 'ticket' => $ticket )
 				)
 			);
-			$session  = new HubSession( $response[ 'body' ] );
+			if ( $this->is_response_OK( $response ) && $json = json_decode( $response[ 'body' ], true ) ) {
+				//Store the new Session into the WordPress user meta
+				\GTO\Framework\Util\User::set_user_transient(
+					$user->ID,
+					self::TRANSIENT_SESSION,
+					$json[ 'id' ],
+					5 * \HOUR_IN_SECONDS
+				);
 
-			//Store the new Session into the WordPress user meta
-			update_user_meta( $user->ID, self::META_SESSION, $session );
-
-			//Return the Session ID
-			return $session->session;
+				//Return the Session ID
+				return $session;
+			}
+			return false;
 		}
 
 		/**
@@ -687,7 +691,7 @@
 					),
 				)
 			);
-			if( $response && $response['code'] == 200 )
+			if ( $response && $response[ 'code' ] == 200 )
 				return true;
 			return false;
 		}
