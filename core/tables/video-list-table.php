@@ -3,7 +3,7 @@
 	if ( ! class_exists( '\\WP_List_Table' ) )
 		require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 
-	final class EkkoCloudVideosTable extends \WP_List_Table {
+	final class VideoListTable extends \WP_List_Table {
 
 		public function __construct( $args = array() ) {
 			parent::__construct( array(

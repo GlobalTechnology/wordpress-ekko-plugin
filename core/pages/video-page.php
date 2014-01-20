@@ -2,7 +2,7 @@
 
 	final class VideoPage extends \GTO\Framework\Admin\AdminPage {
 
-		private $videos_list;
+		private $video_list;
 
 		final protected function __construct() {
 			$course_post_type = \Ekko\Core\CoursePostType::singleton()->post_type();
@@ -21,11 +21,11 @@
 		}
 
 		final public function init_videos_list() {
-			$this->videos_list = new \Ekko\Core\Tables\EkkoCloudVideosTable();
+			$this->video_list = new \Ekko\Core\Tables\VideoListTable();
 		}
 
 		final public function save_changes() {
-			switch ( $this->videos_list->current_action() ) {
+			switch ( $this->video_list->current_action() ) {
 				case 'delete':
 					if ( array_key_exists( 'videos', $_POST ) && is_array( $_POST[ 'videos' ] ) ) {
 						$videos = $_POST[ 'videos' ];
@@ -44,7 +44,7 @@
 		}
 
 		final public function display_page() {
-			$this->videos_list->prepare_items();
+			$this->video_list->prepare_items();
 			?>
 			<div class="wrap">
 
@@ -55,7 +55,7 @@
 				</h2>
 
 				<form action="" method="post">
-					<?php $this->videos_list->display(); ?>
+					<?php $this->video_list->display(); ?>
 				</form>
 				<br class="clear" />
 			</div>

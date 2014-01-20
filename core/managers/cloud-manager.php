@@ -1,11 +1,11 @@
 <?php namespace Ekko\Core\Managers {
 
 	/**
-	 * Class CloudVideoManager
+	 * Class CloudManager
 	 * @package Ekko\Core\Managers
-	 * @method static \Ekko\Core\Managers\CloudVideoManager singleton()
+	 * @method static \Ekko\Core\Managers\CloudManager singleton()
 	 */
-	final class CloudVideoManager extends \GTO\Framework\Singleton {
+	final class CloudManager extends \GTO\Framework\Singleton {
 
 		const VIDEO_STATE_NEW        = 'NEW';
 		const VIDEO_STATE_NEW_MASTER = 'NEW_MASTER';

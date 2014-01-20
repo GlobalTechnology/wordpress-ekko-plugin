@@ -3,7 +3,7 @@
 	if ( ! class_exists( '\\WP_List_Table' ) )
 		require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
 
-	final class EnrolledStudentsListTable extends \WP_List_Table {
+	final class EnrollmentListTable extends \WP_List_Table {
 
 		function __construct() {
 			parent::__construct( array(

@@ -10,7 +10,7 @@
 
 		const ENROLLMENT_COLUMN = 'enrollment';
 
-		public static $students_list;
+		public static $enrollment_list;
 
 		final protected function __construct() {
 			$course_post_type = \Ekko\Core\CoursePostType::singleton()->post_type();
@@ -28,7 +28,7 @@
 		}
 
 		final public function init_students_list() {
-			$this->students_list = new \Ekko\Core\Tables\EnrolledStudentsListTable();
+			$this->enrollment_list = new \Ekko\Core\Tables\EnrollmentListTable();
 
 		}
 
@@ -92,7 +92,7 @@
 		final public function save_changes() {
 			$post   = get_post( $_REQUEST[ 'post' ] );
 			$course = \Ekko\Core\CoursePostType::singleton()->get_course( $post );
-			switch ( $this->students_list->current_action() ) {
+			switch ( $this->enrollment_list->current_action() ) {
 				case 'enrollment-type':
 					check_admin_referer( 'enrollment-type', '_wpnonce_enrollment-type' );
 					$enrollment_type = stripslashes( $_POST[ 'enrollment-type' ] );
@@ -109,7 +109,7 @@
 		}
 
 		final public function display_page() {
-			$this->students_list->prepare_items();
+			$this->enrollment_list->prepare_items();
 			$post   = get_post( $_REQUEST[ 'post' ] );
 			$course = \Ekko\Core\CoursePostType::singleton()->get_course( $post );
 			?>
@@ -131,7 +131,7 @@
 
 							<form id="posts-filter" action="" method="post">
 								<input type="hidden" name="page" value="<?php echo $_REQUEST[ 'page' ] ?>" />
-								<?php $this->students_list->display(); ?>
+								<?php $this->enrollment_list->display(); ?>
 								<br class="clear" />
 							</form>
 						</div>
