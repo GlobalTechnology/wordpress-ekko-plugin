@@ -114,7 +114,7 @@ angular.module( 'EkkoApp.controllers', [] )
 
 			editor = $scope._editors[ id ];
 			if ( !editor ) {
-				editor = $scope._editors[ id ] = ekko.media.editor.open( id, { frame: type } );
+				editor = $scope._editors[ id ] = ekko.editor.open( id, { frame: type } );
 				editor.on( 'add-media', $scope.addMediaCallback, editor );
 			}
 			else {
@@ -125,7 +125,7 @@ angular.module( 'EkkoApp.controllers', [] )
 		//Remove the editors when $state is destroyed
 		$scope.$on( '$destroy', function () {
 			for ( var prop in $scope._editors ) {
-				ekko.media.editor.remove( prop );
+				ekko.editor.remove( prop );
 				delete $scope._editors[ prop ];
 			}
 		} );
@@ -168,13 +168,13 @@ angular.module( 'EkkoApp.controllers', [] )
 				$scope._thumbnail.open();
 			}
 			else {
-				$scope._thumbnail = ekko.media.thumbnail.open( $scope.media.id, {} );
+				$scope._thumbnail = ekko.thumbnail.open( $scope.media.id, {} );
 				$scope._thumbnail.on( 'select', $scope.addMediaThumbnailCallback );
 			}
 		};
 
 		$scope.$on( '$destroy', function () {
-			ekko.media.thumbnail.remove( $scope.media.id );
+			ekko.thumbnail.remove( $scope.media.id );
 		} );
 	} ] )
 	.controller( 'MultipleChoiceQuestionController', [ '$scope', function ( $scope ) {

@@ -18,11 +18,11 @@
 		}
 
 		final public function register_scripts_styles( $hook_suffix ) {
-			wp_register_script( 'jfm-videos', \Ekko\PLUGIN_URL . 'js/jfm-videos.js', array( 'ecv-editor' ) );
+			wp_register_script( 'jfm-videos', \Ekko\PLUGIN_URL . 'js/jfm/arclight.js', array( 'ekko-cloud-video' ) );
 		}
 
 		final public function media_templates() {
-			include( \Ekko\PLUGIN_DIR . 'templates/jfm-template.php' );
+			include( \Ekko\PLUGIN_DIR . 'templates/arclight-template.php' );
 		}
 
 		final public function get_languages() {

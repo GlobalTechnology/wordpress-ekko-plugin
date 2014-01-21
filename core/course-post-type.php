@@ -115,10 +115,10 @@
 
 			//Ekko Course Creator
 			wp_register_style( 'ekko-app', \Ekko\PLUGIN_URL . 'css/course.css', array( 'bootstrap', 'bootstrap-switch' ) );
-			wp_register_script( 'ekko-app-controllers', \Ekko\PLUGIN_URL . 'js/controllers.js', array( 'angular' ) );
-			wp_register_script( 'ekko-app-services', \Ekko\PLUGIN_URL . 'js/services.js', array( 'angular' ) );
-			wp_register_script( 'ekko-app-directives', \Ekko\PLUGIN_URL . 'js/directives.js', array( 'angular' ) );
-			wp_register_script( 'ekko-app', \Ekko\PLUGIN_URL . 'js/ekko-app.js', array(
+			wp_register_script( 'ekko-app-controllers', \Ekko\PLUGIN_URL . 'js/ekko/controllers.js', array( 'angular' ) );
+			wp_register_script( 'ekko-app-services', \Ekko\PLUGIN_URL . 'js/ekko/services.js', array( 'angular' ) );
+			wp_register_script( 'ekko-app-directives', \Ekko\PLUGIN_URL . 'js/ekko/directives.js', array( 'angular' ) );
+			wp_register_script( 'ekko-app', \Ekko\PLUGIN_URL . 'js/ekko/ekko-app.js', array(
 					'bootstrap',
 					'bootstrap-switch',
 					'angular-ui',
@@ -137,7 +137,7 @@
 				wp_enqueue_media();
 				wp_enqueue_style( 'ekko-app' );
 				wp_enqueue_script( 'ekko-app' );
-				wp_enqueue_script( 'ecv-editor' );
+				wp_enqueue_script( 'ekko-cloud-video' );
 				//TODO Add Setting
 				wp_enqueue_script( 'jfm-videos' );
 			}
@@ -198,7 +198,7 @@
 		}
 
 		final public function course_templates() {
-			include( \Ekko\PLUGIN_DIR . 'templates/course-template.php' );
+			include( \Ekko\PLUGIN_DIR . 'templates/ekko-template.php' );
 		}
 
 		final public function redirect_post( $location, $post_id ) {

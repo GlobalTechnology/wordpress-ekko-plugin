@@ -1,22 +1,24 @@
 window.jfm = window.jfm || {};
 
 (function ( $ ) {
-	_.extend( jfm, /** @lends jfm */ { models: {}, views: {}, controllers: {}, frames: {} } );
+	_.extend( jfm, /** @lends jfm */ { model: {}, view: {}, controller: {} } );
 
-	/***********************
-	 *  Models
-	 **********************/
+	/**
+	 * ========================================================================
+	 * MODELS
+	 * ========================================================================
+	 */
 
 	/**
 	 * JFM Arclight Video Model
 	 *
-	 * @class jfm.models.ArclightVideo
+	 * @class jfm.model.ArclightVideo
 	 * @namespace jfm.models
 	 * @augments Backbone.Model
 	 */
-	var ArclightVideo = jfm.models.ArclightVideo = Backbone.Model.extend( /** @lends jfm.models.ArclightVideo */ {
+	var ArclightVideo = jfm.model.ArclightVideo = Backbone.Model.extend( /** @lends jfm.model.ArclightVideo */ {
 		idAttribute: 'refId'
-	}, /** @lends jfm.models.ArclightVideo.prototype */ {
+	}, /** @lends jfm.model.ArclightVideo.prototype */ {
 		create: function ( attrs ) {
 			return Videos.all.push( attrs );
 		},
@@ -29,11 +31,11 @@ window.jfm = window.jfm || {};
 	/**
 	 * JFM Arclight Video Collection
 	 *
-	 * @class jfm.models.ArclightVideos
+	 * @class jfm.model.ArclightVideos
 	 * @namespace jfm.models
 	 * @augments Backbone.Collection
 	 */
-	var ArclightVideos = jfm.models.ArclightVideos = Backbone.Collection.extend( /** @lends jfm.models.ArclightVideos */ {
+	var ArclightVideos = jfm.model.ArclightVideos = Backbone.Collection.extend( /** @lends jfm.model.ArclightVideos */ {
 		model: ArclightVideo,
 
 		initialize: function ( models, options ) {
@@ -121,11 +123,11 @@ window.jfm = window.jfm || {};
 
 	/**
 	 * JFM Video Query
-	 * @class jfm.models.ArclightQuery
+	 * @class jfm.model.ArclightQuery
 	 * @namespace jfm.models
-	 * @augments jfm.models.ArclightVideos
+	 * @augments jfm.model.ArclightVideos
 	 */
-	var ArclightQuery = jfm.models.ArclightQuery = jfm.models.ArclightVideos.extend( /** @lends jfm.models.ArclightQuery */ {
+	var ArclightQuery = jfm.model.ArclightQuery = jfm.model.ArclightVideos.extend( /** @lends jfm.model.ArclightQuery */ {
 		sync: function ( method, model, options ) {
 			console.log( 'ArclightQuery::' + method );
 			if ( 'read' === method ) {
@@ -139,11 +141,11 @@ window.jfm = window.jfm || {};
 
 	/**
 	 * JFM Video Single Selection
-	 * @class jfm.models.ArclightSelection
+	 * @class jfm.model.ArclightSelection
 	 * @namespace jfm.models
-	 * @augments jfm.models.ArclightVideos
+	 * @augments jfm.model.ArclightVideos
 	 */
-	var ArclightSelection = jfm.models.ArclightSelection = jfm.models.ArclightVideos.extend( /** @lends jfm.models.ArclightSelection */ {
+	var ArclightSelection = jfm.model.ArclightSelection = jfm.model.ArclightVideos.extend( /** @lends jfm.model.ArclightSelection */ {
 		initialize: function ( models, options ) {
 			ArclightVideos.prototype.initialize.apply( this, arguments );
 			this.multiple = false;
@@ -201,18 +203,20 @@ window.jfm = window.jfm || {};
 		}
 	} );
 
-	/***********************
-	 *  Controllers
-	 **********************/
+	/**
+	 * ========================================================================
+	 * CONTROLLERS
+	 * ========================================================================
+	 */
 
 	/**
 	 * Jesus Film Media Arclight Library
 	 *
 	 * @namespace jfm.controllers
-	 * @class jfm.controllers.ArclightLibrary
+	 * @class jfm.controller.ArclightLibrary
 	 * @augments wp.media.controller.State
 	 */
-	jfm.controllers.ArclightLibrary = wp.media.controller.State.extend( /** @lends jfm.controllers.ArclightLibrary */ {
+	jfm.controller.ArclightLibrary = wp.media.controller.State.extend( /** @lends jfm.controller.ArclightLibrary */ {
 		defaults: {
 			id:      'arclight',
 			toolbar: 'arclight',
@@ -232,7 +236,7 @@ window.jfm = window.jfm || {};
 			}
 
 			// If a selection instance isn't provided, create one.
-			if ( !(selection instanceof jfm.models.ArclightSelection) ) {
+			if ( !(selection instanceof jfm.model.ArclightSelection) ) {
 				props = selection;
 
 				if ( !props ) {
@@ -244,7 +248,7 @@ window.jfm = window.jfm || {};
 				// it will use those values as the selection instance's
 				// `props` model. Otherwise, it will copy the library's
 				// `props` model.
-				this.set( 'selection', new jfm.models.ArclightSelection( null, {
+				this.set( 'selection', new jfm.model.ArclightSelection( null, {
 					props: props
 				} ) );
 			}
@@ -264,16 +268,18 @@ window.jfm = window.jfm || {};
 
 	} );
 
-	/***********************
-	 *  Views
-	 **********************/
+	/**
+	 * ========================================================================
+	 * VIEWS
+	 * ========================================================================
+	 */
 
 	/**
-	 * @class jfm.views.LanguageFilter
+	 * @class jfm.view.LanguageFilter
 	 * @namespace jfm.views
 	 * @augments wp.media.view.AttachmentFilters
 	 */
-	jfm.views.LanguageFilter = wp.media.view.AttachmentFilters.extend( /** @lends jfm.views.LanguageFilter */ {
+	jfm.view.LanguageFilter = wp.media.view.AttachmentFilters.extend( /** @lends jfm.view.LanguageFilter */ {
 		createFilters: function () {
 			var languages = {
 				'529':   'English',
@@ -307,11 +313,11 @@ window.jfm = window.jfm || {};
 	} );
 
 	/**
-	 * @class jfm.views.ArclightBrowser
+	 * @class jfm.view.ArclightBrowser
 	 * @namespace jfm.views
 	 * @augments wp.media.View
 	 */
-	jfm.views.ArclightBrowser = wp.media.View.extend( /** @lends jfm.views.ArclightBrowser */ {
+	jfm.view.ArclightBrowser = wp.media.View.extend( /** @lends jfm.view.ArclightBrowser */ {
 		tagName:   'div',
 		className: 'attachments-browser arclight-browser',
 
@@ -342,7 +348,7 @@ window.jfm = window.jfm || {};
 
 			this.views.add( this.toolbar );
 
-			this.toolbar.set( 'language', new jfm.views.LanguageFilter( {
+			this.toolbar.set( 'language', new jfm.view.LanguageFilter( {
 				controller: this.controller,
 				model:      this.collection.props,
 				priority:   -80
@@ -367,7 +373,7 @@ window.jfm = window.jfm || {};
 				sortable:       false,
 
 				// The single `Attachment` view to be used in the `Attachments` view.
-				AttachmentView: jfm.views.ArclightVideo
+				AttachmentView: jfm.view.ArclightVideo
 			} );
 
 			this.views.add( this.videos );
@@ -376,11 +382,11 @@ window.jfm = window.jfm || {};
 	} );
 
 	/**
-	 * @class jfm.views.ArclightVideo
+	 * @class jfm.view.ArclightVideo
 	 * @namespace jfm.views
 	 * @augments wp.media.view.Attachment
 	 */
-	jfm.views.ArclightVideo = wp.media.view.Attachment.extend( /** @lends jfm.views.ArclightVideo */ {
+	jfm.view.ArclightVideo = wp.media.view.Attachment.extend( /** @lends jfm.view.ArclightVideo */ {
 		template:   wp.media.template( 'arclight-video' ),
 		buttons:    {
 			check: true
@@ -404,7 +410,7 @@ window.jfm = window.jfm || {};
 		}
 	} );
 
-	jfm.views.ArclightVideoToolbar = wp.media.view.Toolbar.Select.extend( {
+	jfm.view.ArclightVideoToolbar = wp.media.view.Toolbar.Select.extend( {
 
 	} );
 
