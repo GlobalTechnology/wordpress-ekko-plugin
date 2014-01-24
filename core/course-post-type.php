@@ -75,8 +75,10 @@
 			add_action( 'admin_menu', array( '\Ekko\Core\Pages\PublishPage', 'singleton' ), 10, 0 );
 			add_action( 'admin_menu', array( '\Ekko\Core\Pages\EnrollmentPage', 'singleton' ), 10, 0 );
 			add_action( 'admin_menu', array( '\Ekko\Core\Pages\VideoPage', 'singleton' ), 10, 0 );
+			add_action( 'admin_menu', array( '\Ekko\Core\Pages\SettingsPage', 'singleton' ), 10, 0 );
 
 			add_action( 'admin_init', array( '\Ekko\Core\Managers\CloudManager', 'singleton' ), 0, 0 );
+			add_action( 'admin_init', array( '\Ekko\Core\Managers\ArclightManager', 'singleton' ), 0, 0 );
 
 			add_action( 'dbx_post_sidebar', array( &$this, 'course_templates' ), 10, 0 );
 			add_action( 'before_delete_post', array( &$this, 'delete_post' ), 10, 1 );
@@ -93,40 +95,42 @@
 
 		protected function enqueue_admin_scripts( $hook_suffix ) {
 			/* Register Scripts and Styles */
+			$suffix = \SCRIPT_DEBUG ? '' : '.min';
+
 			//Bootstrap
 			wp_register_style( 'bootstrap', \Ekko\PLUGIN_URL . 'lib/bootstrap/css/bootstrap.css' );
-			wp_register_script( 'bootstrap', \Ekko\PLUGIN_URL . 'lib/bootstrap/js/bootstrap.js', array( 'jquery' ), null, false );
+			wp_register_script( 'bootstrap', \Ekko\PLUGIN_URL . "lib/bootstrap/js/bootstrap$suffix.js", array( 'jquery' ), null, false );
 
 			//Bootstrap Switch
 			wp_register_style( 'bootstrap-switch', \Ekko\PLUGIN_URL . 'lib/bootstrapSwitch/bootstrap-switch.css', array( 'bootstrap' ) );
-			wp_register_script( 'bootstrap-switch', \Ekko\PLUGIN_URL . 'lib/bootstrapSwitch/bootstrap-switch.js', array( 'jquery' ) );
+			wp_register_script( 'bootstrap-switch', \Ekko\PLUGIN_URL . "lib/bootstrapSwitch/bootstrap-switch$suffix.js", array( 'jquery' ) );
 
 			//AngularJS
-			wp_register_script( 'angular', \Ekko\PLUGIN_URL . 'lib/angular/angular.js', array(), null, false );
-			wp_register_script( 'angular-bootstrap', \Ekko\PLUGIN_URL . 'lib/angular-bootstrap/ui-bootstrap-tpls.js', array( 'angular' ), null, false );
+			wp_register_script( 'angular', \Ekko\PLUGIN_URL . "lib/angular/angular$suffix.js", array(), null, false );
+			wp_register_script( 'angular-bootstrap', \Ekko\PLUGIN_URL . "lib/angular-bootstrap/ui-bootstrap-tpls$suffix.js", array( 'angular' ), null, false );
 
 			//CKEditor
 			wp_register_script( 'ckeditor', \Ekko\PLUGIN_URL . 'lib/ckeditor/ckeditor.js', array(), null, false );
 
 			//Angular UI
-			wp_register_script( 'angular-ui-ieshiv', \Ekko\PLUGIN_URL . 'lib/angular-ui/angular-ui-ieshiv.js', array(), null, false );
-			wp_register_script( 'angular-ui', \Ekko\PLUGIN_URL . 'lib/angular-ui/angular-ui.js', array( 'angular-ui-ieshiv', 'jquery-ui-sortable', 'ckeditor', 'angular' ), null, false );
+			wp_register_script( 'angular-ui-ieshiv', \Ekko\PLUGIN_URL . "lib/angular-ui/angular-ui-ieshiv$suffix.js", array(), null, false );
+			wp_register_script( 'angular-ui', \Ekko\PLUGIN_URL . "lib/angular-ui/angular-ui$suffix.js", array( 'angular-ui-ieshiv', 'jquery-ui-sortable', 'ckeditor', 'angular' ), null, false );
 
 			//Ekko Course Creator
 			wp_register_style( 'ekko-app', \Ekko\PLUGIN_URL . 'css/course.css', array( 'bootstrap', 'bootstrap-switch' ) );
-			wp_register_script( 'ekko-app-controllers', \Ekko\PLUGIN_URL . 'js/controllers.js', array( 'angular' ) );
-			wp_register_script( 'ekko-app-services', \Ekko\PLUGIN_URL . 'js/services.js', array( 'angular' ) );
-			wp_register_script( 'ekko-app-directives', \Ekko\PLUGIN_URL . 'js/directives.js', array( 'angular' ) );
-			wp_register_script( 'ekko-app', \Ekko\PLUGIN_URL . 'js/ekko-app.js', array(
-					'bootstrap',
-					'bootstrap-switch',
-					'angular-ui',
-					'angular-bootstrap',
-					'ckeditor',
-					'ekko-app-controllers',
-					'ekko-app-services',
-					'ekko-app-directives',
-				), null, false );
+			wp_register_script( 'ekko-app-controllers', \Ekko\PLUGIN_URL . 'js/ekko/controllers.js', array( 'angular' ) );
+			wp_register_script( 'ekko-app-services', \Ekko\PLUGIN_URL . 'js/ekko/services.js', array( 'angular' ) );
+			wp_register_script( 'ekko-app-directives', \Ekko\PLUGIN_URL . 'js/ekko/directives.js', array( 'angular' ) );
+			wp_register_script( 'ekko-app', \Ekko\PLUGIN_URL . 'js/ekko/ekko-app.js', array(
+				'bootstrap',
+				'bootstrap-switch',
+				'angular-ui',
+				'angular-bootstrap',
+				'ckeditor',
+				'ekko-app-controllers',
+				'ekko-app-services',
+				'ekko-app-directives',
+			), null, false );
 
 			wp_localize_script( 'ekko-app', '_EkkoAppL10N', array(
 				'api_url' => admin_url( '/admin-ajax.php' )
@@ -136,7 +140,10 @@
 				wp_enqueue_media();
 				wp_enqueue_style( 'ekko-app' );
 				wp_enqueue_script( 'ekko-app' );
-				wp_enqueue_script( 'ecv-editor' );
+				wp_enqueue_script( 'ekko-cloud-video' );
+				if ( get_option( 'jfm_arclight_enabled', 0 ) ) {
+					wp_enqueue_script( 'jfm-videos' );
+				}
 			}
 		}
 
@@ -194,7 +201,7 @@
 		}
 
 		final public function course_templates() {
-			include( \Ekko\PLUGIN_DIR . 'templates/course-template.php' );
+			include( \Ekko\PLUGIN_DIR . 'templates/ekko-template.php' );
 		}
 
 		final public function redirect_post( $location, $post_id ) {

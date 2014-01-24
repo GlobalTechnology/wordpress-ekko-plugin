@@ -97,6 +97,11 @@ angular.module( 'EkkoApp.controllers', [] )
 					}
 				}
 			}
+			else if( 'arclight' == media.mediaType ) {
+				item = $scope.$ekko.media( 'video' );
+				item.resource = $scope.$ekko.media_arclight( media.attributes.refId, media.attributes.name );
+				item.thumbnail = $scope.$ekko.media_arclight( media.attributes.refId, media.attributes.name );
+			}
 
 			if ( item ) {
 				$scope.$apply( function () {
@@ -114,7 +119,7 @@ angular.module( 'EkkoApp.controllers', [] )
 
 			editor = $scope._editors[ id ];
 			if ( !editor ) {
-				editor = $scope._editors[ id ] = ekko.media.editor.open( id, { frame: type } );
+				editor = $scope._editors[ id ] = ekko.editor.open( id, { frame: type } );
 				editor.on( 'add-media', $scope.addMediaCallback, editor );
 			}
 			else {
@@ -125,7 +130,7 @@ angular.module( 'EkkoApp.controllers', [] )
 		//Remove the editors when $state is destroyed
 		$scope.$on( '$destroy', function () {
 			for ( var prop in $scope._editors ) {
-				ekko.media.editor.remove( prop );
+				ekko.editor.remove( prop );
 				delete $scope._editors[ prop ];
 			}
 		} );
@@ -141,6 +146,9 @@ angular.module( 'EkkoApp.controllers', [] )
 					}
 					else if( $scope.media.thumbnail.type == "ecv" ) {
 						$scope.thumbnail_url = _EkkoAppL10N.api_url + '?action=ecv-video-thumbnail&id=' + $scope.media.thumbnail.ecv_id;
+					}
+					else if( $scope.media.thumbnail.type == 'arclight' ) {
+						$scope.thumbnail_url = _EkkoAppL10N.api_url + '?action=arclight-get-thumbnail&refId=' + $scope.media.thumbnail.refId;
 					}
 					else {
 						$scope.thumbnail_url = _EkkoAppL10N.api_url + '?action=ekko-thumbnail&id=' + $scope.media.thumbnail.post_id;
@@ -168,13 +176,13 @@ angular.module( 'EkkoApp.controllers', [] )
 				$scope._thumbnail.open();
 			}
 			else {
-				$scope._thumbnail = ekko.media.thumbnail.open( $scope.media.id, {} );
+				$scope._thumbnail = ekko.thumbnail.open( $scope.media.id, {} );
 				$scope._thumbnail.on( 'select', $scope.addMediaThumbnailCallback );
 			}
 		};
 
 		$scope.$on( '$destroy', function () {
-			ekko.media.thumbnail.remove( $scope.media.id );
+			ekko.thumbnail.remove( $scope.media.id );
 		} );
 	} ] )
 	.controller( 'MultipleChoiceQuestionController', [ '$scope', function ( $scope ) {

@@ -61,6 +61,14 @@ angular.module( 'EkkoApp.services', [] )
 					title: title
 				};
 			},
+			media_arclight: function( id, title ) {
+				title = title || '';
+				return {
+					type: 'arclight',
+					refId: id,
+					title: title
+				}
+			},
 			//Returns a new Quiz
 			quiz: function() {
 				return {

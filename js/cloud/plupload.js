@@ -184,7 +184,7 @@ window.wp = window.wp || {};
 						}, _.pick( file, 'loaded', 'size', 'percent' ) );
 
 						//Create the `Video`
-						file.ecv_video = ekko.media.model.Video.create( attributes );
+						file.ecv_video = ekko.model.Video.create( attributes );
 
 						ECVUploader.queue.add( file.ecv_video );
 
@@ -231,7 +231,7 @@ window.wp = window.wp || {};
 					var complete;
 
 					file.ecv_video.set( _.extend( data, { uploading: false } ) );
-					ekko.media.model.Video.get( data.id, file.ecv_video );
+					ekko.model.Video.get( data.id, file.ecv_video );
 
 					complete = ECVUploader.queue.all( function ( video ) {
 						return !video.get( 'uploading' );
@@ -366,7 +366,9 @@ window.wp = window.wp || {};
 		}
 	} );
 
-	ECVUploader.queue = new ekko.media.model.Videos( [], {query: false} );
+	$( function () {
+		ECVUploader.queue = new ekko.model.Videos( [], {query: false} );
+	} );
 	ECVUploader.errors = new Backbone.Collection();
 
 	//Attach ECVUploader to ekko namespace
