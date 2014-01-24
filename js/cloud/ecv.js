@@ -588,14 +588,14 @@ window.ekko = window.ekko || {};
 					url:    this.props.get( 'url' )
 				}
 			} ).done( function ( data ) {
-					if ( state !== frame.state() || url !== state.props.get( 'url' ) ) {
-						return;
-					}
-					state.set( {
-						type: data.type
-					} );
-					state.props.set( data );
-				} )
+				if ( state !== frame.state() || url !== state.props.get( 'url' ) ) {
+					return;
+				}
+				state.set( {
+					type: data.type
+				} );
+				state.props.set( data );
+			} )
 			);
 		},
 
@@ -751,7 +751,7 @@ window.ekko = window.ekko || {};
 				} )
 			] );
 
-			if ( jfm.controller.ArclightLibrary ) {
+			if ( 'undefined' != typeof jfm ) {
 				this.states.add( [
 					new jfm.controller.ArclightLibrary( {
 						priority: 40
@@ -761,9 +761,6 @@ window.ekko = window.ekko || {};
 		},
 
 		bindHandlers: function () {
-//			this.on( 'all', function ( eventName ) {
-//				console.log( eventName );
-//			}, this );
 			wp.media.view.MediaFrame.Select.prototype.bindHandlers.apply( this, arguments );
 			this.on( 'menu:render:default', this.mainMenu, this );
 
@@ -845,7 +842,7 @@ window.ekko = window.ekko || {};
 			} ) );
 		},
 
-		arclightContent: function( content ) {
+		arclightContent: function ( content ) {
 			var state = this.state();
 
 			this.$el.removeClass( 'hide-toolbar' );
@@ -879,12 +876,11 @@ window.ekko = window.ekko || {};
 
 		createOEmbedToolbar: function ( toolbar ) {
 			toolbar.view = new ekko.view.OEmbedToolbar( {
-				controller: this,
-				text:       "Blah Blah"
+				controller: this
 			} );
 		},
 
-		arclightToolbar: function( toolbar ) {
+		arclightToolbar: function ( toolbar ) {
 			toolbar.view = new jfm.view.ArclightVideoToolbar( {
 				controller: this
 			} );
@@ -1142,6 +1138,14 @@ window.ekko = window.ekko || {};
 				} );
 			}, editor );
 
+			editor.on( 'arclight-insert', function () {
+				var media = this.get('arclight' ).get('selection' ).single();
+				this.trigger( 'add-media', {
+					mediaType:  'arclight',
+					attributes: media.attributes
+				} );
+			} );
+
 			editor.setState( editor.options.state );
 			return editor;
 		},
@@ -1187,8 +1191,8 @@ window.ekko = window.ekko || {};
 				banner_id: settings.post.featuredImageId,
 				_wpnonce:  settings.post.nonce
 			} ).done( function ( html ) {
-					$( '.well', '#coursebannerdiv' ).html( html );
-				} );
+				$( '.well', '#coursebannerdiv' ).html( html );
+			} );
 		},
 
 		frame: function () {

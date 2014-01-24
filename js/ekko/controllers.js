@@ -97,6 +97,11 @@ angular.module( 'EkkoApp.controllers', [] )
 					}
 				}
 			}
+			else if( 'arclight' == media.mediaType ) {
+				item = $scope.$ekko.media( 'video' );
+				item.resource = $scope.$ekko.media_arclight( media.attributes.refId, media.attributes.name );
+				item.thumbnail = $scope.$ekko.media_arclight( media.attributes.refId, media.attributes.name );
+			}
 
 			if ( item ) {
 				$scope.$apply( function () {
@@ -141,6 +146,9 @@ angular.module( 'EkkoApp.controllers', [] )
 					}
 					else if( $scope.media.thumbnail.type == "ecv" ) {
 						$scope.thumbnail_url = _EkkoAppL10N.api_url + '?action=ecv-video-thumbnail&id=' + $scope.media.thumbnail.ecv_id;
+					}
+					else if( $scope.media.thumbnail.type == 'arclight' ) {
+						$scope.thumbnail_url = _EkkoAppL10N.api_url + '?action=arclight-get-thumbnail&refId=' + $scope.media.thumbnail.refId;
 					}
 					else {
 						$scope.thumbnail_url = _EkkoAppL10N.api_url + '?action=ekko-thumbnail&id=' + $scope.media.thumbnail.post_id;

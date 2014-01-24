@@ -7,9 +7,11 @@
 	 */
 	final class Arclight extends \GTO\Framework\Singleton {
 
-		const ENDPOINT_GET_CATEGORIES = '%(arclight)s/getCategories';
-		const ENDPOINT_GET_LANGUAGES  = '%(arclight)s/getLanguages';
-		const ENDPOINT_GET_TITLES     = '%(arclight)s/getTitles';
+		const ENDPOINT_GET_CATEGORIES         = '%(arclight)s/getCategories';
+		const ENDPOINT_GET_LANGUAGES          = '%(arclight)s/getLanguages';
+		const ENDPOINT_GET_TITLES             = '%(arclight)s/getTitles';
+		const ENDPOINT_GET_ASSET_DETAILS      = '%(arclight)s/getAssetDetails';
+		const ENDPOINT_GET_ASSOCIATED_CONTENT = '%(arclight)s/getAssociatedContent';
 
 		protected function __construct() {
 		}
@@ -65,6 +67,14 @@
 			return array();
 		}
 
+		/**
+		 * Get a list of Titles
+		 *
+		 * @param string $language_id
+		 * @param string $category_name
+		 *
+		 * @return array
+		 */
 		final public function get_titles( $language_id = '529', $category_name = '' ) {
 			$response = wp_remote_get(
 				$this->url( self::ENDPOINT_GET_TITLES, array(
@@ -87,6 +97,63 @@
 				return $titles;
 			}
 			return array();
+		}
+
+		/**
+		 * Get associated content of a Title
+		 *
+		 * @param string $refId
+		 *
+		 * @return array
+		 */
+		final public function get_associated_content( $refId ) {
+			$response = wp_remote_get(
+				$this->url( self::ENDPOINT_GET_ASSOCIATED_CONTENT, array(
+					refId => $refId,
+				) ),
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Accept' => 'application/json',
+					),
+				)
+			);
+			$json     = $this->parse_response( $response, 'associatedContent' );
+			if ( false !== $json ) {
+				$titles = array();
+				foreach ( $json as $object ) {
+					$titles[ ] = $object[ 'content' ];
+				}
+				return $titles;
+			}
+			return array();
+		}
+
+		/**
+		 * Get details of a Title
+		 *
+		 * @param $refId
+		 *
+		 * @return bool|array
+		 */
+		final public function get_details( $refId ) {
+			$response = wp_remote_get(
+				$this->url( self::ENDPOINT_GET_ASSET_DETAILS, array(
+					refId => $refId,
+				) ),
+				array(
+					'redirection' => 0,
+					'headers'     => array(
+						'Accept' => 'application/json',
+					),
+				)
+			);
+			$json     = $this->parse_response( $response, 'assetDetails' );
+			if ( false !== $json ) {
+				// Details are in another level of arrays
+				return array_pop( $json );
+			}
+			return false;
 		}
 
 		/**
@@ -125,12 +192,12 @@
 				$code = (int)$response[ 'response' ][ 'code' ];
 				if ( 200 <= $code || 300 > $code ) {
 					$json = json_decode( $response[ 'body' ], true );
-					switch( json_last_error() ) {
+					switch ( json_last_error() ) {
 						case JSON_ERROR_NONE:
 							break;
 						case JSON_ERROR_UTF8:
 							$json = json_decode( utf8_encode( $response[ 'body' ] ), true );
-							if( $json === null )
+							if ( $json === null )
 								return false;
 							break;
 						default:

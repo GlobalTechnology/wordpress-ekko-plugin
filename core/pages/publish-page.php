@@ -114,6 +114,9 @@
 										$hub->add_course_to_video( $resource->ecv_id, $course_id );
 									}
 								}
+								elseif ( 'arclight' === $resource->type ) {
+									echo sprintf( '<li>%1$s</li>', $resource->title );
+								}
 							}
 							?>
 						</ul>

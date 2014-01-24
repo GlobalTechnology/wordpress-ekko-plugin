@@ -1,7 +1,29 @@
 window.jfm = window.jfm || {};
 
 (function ( $ ) {
-	_.extend( jfm, /** @lends jfm */ { model: {}, view: {}, controller: {} } );
+	_.extend( jfm, /** @lends jfm */ { model: {}, view: {}, controller: {}, util: {} } );
+
+	/**
+	 * ========================================================================
+	 * UTILITY FUNCTIONS
+	 * ========================================================================
+	 */
+
+	/**
+	 * @namespace jfm.util
+	 * @param milliseconds
+	 * @returns {string}
+	 */
+	jfm.util.millisecondsToRuntime = function( milliseconds ) {
+		var length = milliseconds,
+			ms = length % 1000;
+		length = ( length - ms ) / 1000;
+		var seconds = length % 60;
+		length = ( length - seconds ) / 60;
+		var minutes = length % 60,
+			hours = ( length - minutes ) / 60;
+		return hours + ':' + ( minutes < 10 ? '0' : '' ) + minutes + ':' + ( seconds < 10 ? '0' : '' ) + seconds;
+	}
 
 	/**
 	 * ========================================================================
@@ -17,10 +39,39 @@ window.jfm = window.jfm || {};
 	 * @augments Backbone.Model
 	 */
 	var ArclightVideo = jfm.model.ArclightVideo = Backbone.Model.extend( /** @lends jfm.model.ArclightVideo */ {
-		idAttribute: 'refId'
+		idAttribute: 'refId',
+		parse:       function ( response, xhr ) {
+			if ( response.thumbnailUrl === '' ) {
+				response[ 'media_thumbnail' ] = _.chain( response.boxArtUrls )
+					.pluck( 'url' )
+					.filter( function ( boxArt ) {
+						return _.contains( ArclightVideo._boxArtResolutions, boxArt.type )
+					} )
+					.sortBy( function ( boxArt ) {
+						return _.indexOf( ArclightVideo._boxArtResolutions, boxArt.type );
+					} )
+					.last()
+					.value().uri;
+			}
+			else {
+				response['media_thumbnail'] = response.thumbnailUrl;
+			}
+
+			if ( response.length ) {
+				response[ 'runtime' ] = jfm.util.millisecondsToRuntime( response.length * 1 );
+			}
+
+			response.shortDescription = $( '<div/>' ).html( response.shortDescription ).text();
+
+			return response;
+		}
 	}, /** @lends jfm.model.ArclightVideo.prototype */ {
-		create: function ( attrs ) {
-			return Videos.all.push( attrs );
+		_boxArtResolutions: [ //From high to low
+			'Mobile cinematic low',
+			'Small'
+		],
+		create:             function ( attrs ) {
+			return ArclightVideos.all.push( attrs );
 		},
 
 		get: _.memoize( function ( id, video ) {
@@ -39,9 +90,6 @@ window.jfm = window.jfm || {};
 		model: ArclightVideo,
 
 		initialize: function ( models, options ) {
-			this.on( 'all', function ( eventName ) {
-				console.log( 'ArclightVideos::' + eventName );
-			}, this );
 			options = options || {};
 
 			this.props = new Backbone.Model();
@@ -93,15 +141,15 @@ window.jfm = window.jfm || {};
 		},
 
 		sync: function ( method, model, options ) {
-			console.log( 'ArclightVideos::' + method );
 			if ( 'read' === method ) {
 				options = options || {};
 				options.context = this;
-				options.data = _.extend( options.data || {}, {
-					action:   'arclight-get-titles',
-					language: this.props.get( 'language' )
-				} );
-
+				var props = this.props.toJSON();
+				options.data = _.extend(
+					options.data || {},
+					{ action: 'arclight-get-titles' },
+					_.omit( props, 'query' )
+				);
 				return wp.media.ajax( options );
 			} else {
 				return Backbone.sync.apply( this, arguments );
@@ -117,27 +165,9 @@ window.jfm = window.jfm || {};
 	 */
 	jfm.query = function ( props ) {
 		return new ArclightVideos( null, {
-			props: _.extend( _.defaults( props || {}, { language: '529' } ), { query: true } )
+			props: _.extend( _.defaults( props || {}, { language: '529', category: 'featureFilm' } ), { query: true } )
 		} );
 	};
-
-	/**
-	 * JFM Video Query
-	 * @class jfm.model.ArclightQuery
-	 * @namespace jfm.models
-	 * @augments jfm.model.ArclightVideos
-	 */
-	var ArclightQuery = jfm.model.ArclightQuery = jfm.model.ArclightVideos.extend( /** @lends jfm.model.ArclightQuery */ {
-		sync: function ( method, model, options ) {
-			console.log( 'ArclightQuery::' + method );
-			if ( 'read' === method ) {
-
-			} else {
-				fallback = ArclightVideos.prototype.sync ? ArclightVideos.prototype : Backbone;
-				return fallback.sync.apply( this, arguments );
-			}
-		}
-	} );
 
 	/**
 	 * JFM Video Single Selection
@@ -235,6 +265,11 @@ window.jfm = window.jfm || {};
 				this.set( 'library', jfm.query() );
 			}
 
+			this.navigating = false;
+			this.previousProps = new Backbone.Collection();
+
+			this.get( 'library' ).props.on( 'change:refId', this._refIdChanged, this );
+
 			// If a selection instance isn't provided, create one.
 			if ( !(selection instanceof jfm.model.ArclightSelection) ) {
 				props = selection;
@@ -254,7 +289,7 @@ window.jfm = window.jfm || {};
 			}
 
 			if ( !this.get( 'edge' ) ) {
-				this.set( 'edge', 120 );
+				this.set( 'edge', 140 );
 			}
 
 			if ( !this.get( 'gutter' ) ) {
@@ -264,6 +299,28 @@ window.jfm = window.jfm || {};
 
 		reset: function () {
 			this.get( 'selection' ).reset();
+		},
+
+		_refIdChanged: function ( model, value, options ) {
+			if ( !this.navigating ) {
+				var prevAttr = model.previousAttributes();
+				this.previousProps.push( prevAttr );
+			}
+			this.navigating = false;
+		},
+
+		navigateToPrevious: function () {
+			if ( this.previousProps.length > 0 ) {
+				var prevAttr = this.previousProps.pop(),
+					props = this.get( 'library' ).props;
+				this.navigating = true;
+				if ( prevAttr.has( 'refId' ) ) {
+					props.set( 'refId', prevAttr.get( 'refId' ) );
+				}
+				else {
+					props.unset( 'refId' );
+				}
+			}
 		}
 
 	} );
@@ -281,33 +338,62 @@ window.jfm = window.jfm || {};
 	 */
 	jfm.view.LanguageFilter = wp.media.view.AttachmentFilters.extend( /** @lends jfm.view.LanguageFilter */ {
 		createFilters: function () {
-			var languages = {
-				'529':   'English',
-				'20615': 'Chinese (Mandarin)',
-				'21754': 'Chinese (Simplified)',
-				'21046': 'Spanish',
-				'7083':  'Japanese',
-				'584':   'Portuguese',
-				'1106':  'German',
-				'525':   'Arabic',
-				'496':   'French',
-				'3934':  'Russian',
-				'3804':  'Korean'
-			};
+			var languages = [
+				{name: "English", languageId: "529"},
+				{name: "Chinese (Mandarin)", languageId: "20615"},
+				{name: "Chinese (Simplified)", languageId: "21754"},
+				{name: "Spanish", languageId: "21046"},
+				{name: "Japanese", languageId: "7083"},
+				{name: "Portuguese", languageId: "584"},
+				{name: "German", languageId: "1106"},
+				{name: "Arabic", languageId: "525"},
+				{name: "French", languageId: "496"},
+				{name: "Russian", languageId: "3934"},
+				{name: "Korean", languageId: "3804"}
+			];
 			var filters = {},
-				priority = 0;
+				priority = 100;
 
-			_.each( languages, function ( text, key ) {
-				filters[ key ] = {
-					text:     text,
+			_.each( languages, function ( language ) {
+				filters[ language.languageId ] = {
+					text:     language.name,
 					priority: priority,
 					props:    {
-						language: key
+						language: language.languageId
 					}
 				};
-				priority += 10;
+				priority += 100;
 			} );
 
+			this.filters = filters;
+		}
+	} );
+
+	/**
+	 * @class jfm.view.CategoryFilter
+	 * @namespace jfm.view
+	 * @augments wp.media.view.AttachmentFilters
+	 */
+	jfm.view.CategoryFilter = wp.media.view.AttachmentFilters.extend( /** @lends jfm.view.CategoryFilter */ {
+		createFilters: function () {
+			var categories = [
+				{"name": "anime", "description": "Anime"},
+				{"name": "featureFilm", "description": "Feature Film"},
+				{"name": "series", "description": "Series"},
+				{"name": "shortFilm", "description": "Short Film"}
+			];
+			var filters = {},
+				priority = 100;
+			_.each( categories, function ( category ) {
+				filters[ category.name ] = {
+					text:     category.description,
+					priority: priority,
+					props:    {
+						category: category.name
+					}
+				};
+				priority += 100;
+			} );
 			this.filters = filters;
 		}
 	} );
@@ -322,26 +408,40 @@ window.jfm = window.jfm || {};
 		className: 'attachments-browser arclight-browser',
 
 		initialize: function () {
-			_.defaults( this.options, {
-				display: false
-			} );
-
 			this.createToolbar();
 			this.updateContent();
-//			this.createSidebar();
+			this.createSidebar();
+			this.updateControls();
 
 			this.collection.on( 'add remove reset', this.updateContent, this );
+			this.collection.props.on( 'change:refId', this.updateControls, this );
 		},
 
 		dispose: function () {
-//			this.options.selection.off( null, null, this );
+			this.options.selection.off( null, null, this );
+			this.collection.props.off( null, null, this );
 			wp.media.View.prototype.dispose.apply( this, arguments );
 			return this;
 		},
 
-		createToolbar: function () {
-			var filters, FiltersConstructor;
+		updateControls: function () {
+			var previous = this.sidebar.get( 'previous' ),
+				language = this.toolbar.get( 'language' ),
+				category = this.toolbar.get( 'category' ),
+				refId = ( this.collection.props.get( 'refId' ) ) ? true : false;
 
+			if ( refId ) {
+				previous.$el.show();
+			}
+			else {
+				previous.$el.hide();
+			}
+			language.$el.prop( 'disabled', refId );
+			category.$el.prop( 'disabled', refId );
+		},
+
+		createToolbar: function () {
+			var self = this;
 			this.toolbar = new wp.media.view.Toolbar( {
 				controller: this.controller
 			} );
@@ -353,14 +453,42 @@ window.jfm = window.jfm || {};
 				model:      this.collection.props,
 				priority:   -80
 			} ).render() );
+
+			this.toolbar.set( 'category', new jfm.view.CategoryFilter( {
+				controller: this.controller,
+				model:      this.collection.props,
+				priority:   -40
+			} ).render() );
 		},
 
 		updateContent: function () {
-			console.log( 'Update Content!' );
 			var view = this;
+			this.options.selection.reset();
 
 			if ( !this.videos ) {
 				this.createVideos();
+			}
+		},
+
+		createSidebar: function () {
+			var options = this.options,
+				selection = options.selection,
+				sidebar = this.sidebar = new wp.media.view.Sidebar( {
+					controller: this.controller
+				} );
+
+			this.views.add( sidebar );
+
+			selection.on( 'selection:single', this.createSingle, this );
+			selection.on( 'selection:unsingle', this.disposeSingle, this );
+
+			sidebar.set( 'previous', new jfm.view.PreviousButton( {
+				controller: this.controller,
+				priority:   0
+			} ) );
+
+			if ( selection.single() ) {
+				this.createSingle();
 			}
 		},
 
@@ -377,6 +505,50 @@ window.jfm = window.jfm || {};
 			} );
 
 			this.views.add( this.videos );
+		},
+
+		createSingle: function () {
+			var self = this,
+				sidebar = this.sidebar,
+				collection = this.collection,
+				single = this.options.selection.single();
+
+			sidebar.set( 'details', new jfm.view.ArclightVideo.Details( {
+				controller: this.controller,
+				model:      single,
+				priority:   80
+			} ) );
+
+			var browseButton = new wp.media.view.Button( {
+				controller: this.controller,
+				disabled:   !( single.get( 'groupContentCount' ) ),
+				priority:   120,
+				text:       ('series' === single.get( 'type' ) ) ? 'Browse Series' : 'Browse Clips',
+				click:      function () {
+					collection.props.set( 'refId', single.get( 'refId' ) );
+				}
+			} );
+			sidebar.set( 'browse', browseButton );
+
+			if ( !single.get( 'groupContentCount' ) ) {
+				wp.media.ajax( {
+					context: this,
+					data:    {
+						action: 'arclight-has-associated',
+						refId:  single.get( 'refId' )
+					}
+				} ).done( function () {
+					if ( single === self.options.selection.single() ) {
+						browseButton.model.set( 'disabled', false );
+					}
+				} );
+			}
+		},
+
+		disposeSingle: function () {
+			var sidebar = this.sidebar;
+			sidebar.unset( 'details' );
+			sidebar.unset( 'browse' );
 		}
 
 	} );
@@ -394,9 +566,6 @@ window.jfm = window.jfm || {};
 		initialize: function () {
 			var selection = this.options.selection;
 
-			this.model.on( 'change:sizes change:uploading change:state', this.render, this );
-			this.model.on( 'change:percent', this.progress, this );
-
 			// Update the selection.
 			this.model.on( 'add', this.select, this );
 			this.model.on( 'remove', this.deselect, this );
@@ -406,12 +575,69 @@ window.jfm = window.jfm || {};
 
 			// Update the model's details view.
 			this.model.on( 'selection:single selection:unsingle', this.details, this );
-//			this.details( this.model, this.controller.state().get( 'selection' ) );
+			this.details( this.model, this.controller.state().get( 'selection' ) );
 		}
 	} );
 
-	jfm.view.ArclightVideoToolbar = wp.media.view.Toolbar.Select.extend( {
+	/**
+	 * @class jfm.view.ArclightVideo.Details
+	 * @namespace jfm.view.ArclightVideo
+	 * @augments jfm.view.ArclightVideo
+	 */
+	jfm.view.ArclightVideo.Details = jfm.view.ArclightVideo.extend( /** @lends jfm.view.ArclightVideo.Details */ {
+		tagName:   'div',
+		className: 'attachment-details',
+		template:  wp.media.template( 'arclight-video-details' )
+	} );
 
+	/**
+	 * @class jfm.view.ArclightVideoToolbar
+	 * @namespace jfm.view
+	 * @augments wp.media.view.Toolbar.Select
+	 */
+	jfm.view.ArclightVideoToolbar = wp.media.view.Toolbar.Select.extend( /** @lends jfm.view.ArclightVideoToolbar */ {
+		initialize: function () {
+			_.defaults( this.options, {
+				text:     'Add Video',
+				requires: false,
+				event:    'arclight-insert'
+			} );
+
+			wp.media.view.Toolbar.Select.prototype.initialize.apply( this, arguments );
+		},
+
+		refresh: function () {
+			var state = this.controller.state(),
+				selection = state.get( 'selection' ),
+				disabled = true;
+
+			if ( selection && selection.length ) {
+				disabled = selection.single().get( 'type' ) === 'series';
+			}
+			this.get( 'select' ).model.set( 'disabled', disabled );
+
+			wp.media.view.Toolbar.Select.prototype.refresh.apply( this, arguments );
+		}
+	} );
+
+	/**
+	 * @class jfm.view.PreviousButton
+	 * @namespace jfm.view
+	 * @augments wp.media.View
+	 */
+	jfm.view.PreviousButton = wp.media.View.extend( /** @lends jfm.view.PreviousButton */ {
+		tagName:   'div',
+		className: 'arclight-previous',
+
+		initialize: function () {
+			this.views.add( new wp.media.view.Button( {
+				controller: this.controller,
+				text:       'Previous Videos',
+				click:      function () {
+					this.controller.state().navigateToPrevious();
+				}
+			} ) );
+		}
 	} );
 
 	// Clean up. Prevents mobile browsers caching
