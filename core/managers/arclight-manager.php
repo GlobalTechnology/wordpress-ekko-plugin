@@ -7,6 +7,15 @@
 	 */
 	final class ArclightManager extends \GTO\Framework\Singleton {
 
+		private static $box_art_order = array(
+			'Mobile cinematic high' => 5,
+			'HD'                    => 4,
+			'Large'                 => 3,
+			'Medium'                => 2,
+			'Mobile cinematic low'  => 1,
+			'Small'                 => 0,
+		);
+
 		/**
 		 * Constructor
 		 *
@@ -108,11 +117,40 @@
 			$thumbnail = \Ekko\PLUGIN_URL . 'images/default-video.png';
 
 			$details = \Ekko\Core\Services\Arclight::singleton()->get_details( $refId );
-			if ( $details && array_key_exists( 'thumbnailUrl', $details ) )
-				$thumbnail = $details[ 'thumbnailUrl' ];
+			if ( $details ) {
+				if ( array_key_exists( 'videoStillUrl', $details ) && ! empty( $details[ 'videoStillUrl' ] ) ) {
+					$thumbnail = $details[ 'videoStillUrl' ];
+				}
+				elseif ( array_key_exists( 'boxArtUrls', $details ) ) {
+					$boxArt = $details[ 'boxArtUrls' ];
+					if ( count( $boxArt ) > 0 ) {
+						uasort( $boxArt, array( &$this, '_box_art_sort' ) );
+						$item      = array_pop( $boxArt );
+						$thumbnail = $item[ 'url' ][ 'uri' ];
+					}
+				}
+			}
 
 			wp_redirect( $thumbnail );
 			wp_die();
+		}
+
+		/**
+		 * Sort Box Art by size
+		 * @internal
+		 * @param $a
+		 * @param $b
+		 *
+		 * @return int
+		 */
+		public function _box_art_sort( $a, $b ) {
+			$a_index = array_key_exists( $a[ 'url' ][ 'type' ], self::$box_art_order ) ? self::$box_art_order[ $a[ 'url' ][ 'type' ] ] : - 1;
+			$b_index = array_key_exists( $b[ 'url' ][ 'type' ], self::$box_art_order ) ? self::$box_art_order[ $b[ 'url' ][ 'type' ] ] : - 1;
+			if ( $a_index > $b_index )
+				return 1;
+			elseif ( $b_index > $a_index )
+				return - 1;
+			return 0;
 		}
 
 	}

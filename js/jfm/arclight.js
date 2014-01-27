@@ -14,7 +14,7 @@ window.jfm = window.jfm || {};
 	 * @param milliseconds
 	 * @returns {string}
 	 */
-	jfm.util.millisecondsToRuntime = function( milliseconds ) {
+	jfm.util.millisecondsToRuntime = function ( milliseconds ) {
 		var length = milliseconds,
 			ms = length % 1000;
 		length = ( length - ms ) / 1000;
@@ -41,7 +41,7 @@ window.jfm = window.jfm || {};
 	var ArclightVideo = jfm.model.ArclightVideo = Backbone.Model.extend( /** @lends jfm.model.ArclightVideo */ {
 		idAttribute: 'refId',
 		parse:       function ( response, xhr ) {
-			if ( response.thumbnailUrl === '' ) {
+			if ( response.videoStillUrl === '' ) {
 				response[ 'media_thumbnail' ] = _.chain( response.boxArtUrls )
 					.pluck( 'url' )
 					.filter( function ( boxArt ) {
@@ -50,7 +50,7 @@ window.jfm = window.jfm || {};
 					.sortBy( function ( boxArt ) {
 						return _.indexOf( ArclightVideo._boxArtResolutions, boxArt.type );
 					} )
-					.last()
+					.first()
 					.value().uri;
 			}
 			else {
@@ -67,6 +67,10 @@ window.jfm = window.jfm || {};
 		}
 	}, /** @lends jfm.model.ArclightVideo.prototype */ {
 		_boxArtResolutions: [ //From high to low
+			'Mobile cinematic high',
+			'HD',
+			'Large',
+			'Medium',
 			'Mobile cinematic low',
 			'Small'
 		],
