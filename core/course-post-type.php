@@ -114,7 +114,7 @@
 
 			//Angular UI
 			wp_register_script( 'angular-ui-ieshiv', \Ekko\PLUGIN_URL . "lib/angular-ui/angular-ui-ieshiv$suffix.js", array(), null, false );
-			wp_register_script( 'angular-ui', \Ekko\PLUGIN_URL . "lib/angular-ui/angular-ui$suffix.js", array( 'angular-ui-ieshiv', 'jquery-ui-sortable', 'ckeditor', 'angular' ), null, false );
+			wp_register_script( 'angular-ui', \Ekko\PLUGIN_URL . "lib/angular-ui/angular-ui$suffix.js", array( 'ckeditor', 'angular-ui-ieshiv', 'jquery-ui-sortable', 'angular' ), null, false );
 
 			//Ekko Course Creator
 			wp_register_style( 'ekko-app', \Ekko\PLUGIN_URL . 'css/course.css', array( 'bootstrap', 'bootstrap-switch' ) );
