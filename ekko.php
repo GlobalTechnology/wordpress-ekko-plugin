@@ -5,7 +5,7 @@
 	 * Description: Ekko Course Creator and Content Management
 	 * Author:      Brian Zoetewey
 	 * Author URI:  ekkomobile.com
-	 * Version:     0.3
+	 * Version:     0.4.0
 	 * Text Domain: ekko
 	 * Domain Path: /languages/
 	 * License:     Modified BSD

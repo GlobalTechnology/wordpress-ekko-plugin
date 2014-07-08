@@ -32,13 +32,11 @@
 		}
 
 		final public function register_scripts_styles( $hook_suffix ) {
-			//Ekko Media MVC
-			wp_register_script( 'ecv-models', \Ekko\PLUGIN_URL . 'js/ecv-models.js', array( 'media-editor' ) );
-			wp_register_script( 'ecv-views', \Ekko\PLUGIN_URL . 'js/ecv-views.js', array( 'ecv-models', 'ecv-plupload' ) );
-			wp_register_script( 'ecv-editor', \Ekko\PLUGIN_URL . 'js/ecv-editor.js', array( 'ecv-views' ) );
+			//Ekko Cloud Video
+			wp_register_script( 'ekko-cloud-video', \Ekko\PLUGIN_URL . 'js/cloud/ecv.js', array( 'media-editor', 'ecv-plupload' ) );
 
 			//Ekko Cloud Video Uploader
-			wp_register_script( 'ecv-plupload', \Ekko\PLUGIN_URL . 'js/ecv-plupload.js', array( 'plupload-all', 'ecv-models' ), false, false );
+			wp_register_script( 'ecv-plupload', \Ekko\PLUGIN_URL . 'js/cloud/plupload.js', array( 'plupload-all' ), false, false );
 			$s3_bucket    = 'ecv-uploads';
 			$s3_policy    = base64_encode( json_encode( array(
 				'expiration' => date( 'Y-m-d\TH:i:s.000\Z', strtotime( '+1 day' ) ),
@@ -81,7 +79,7 @@
 				'limitExceeded' => false,
 			) );
 
-			wp_localize_script( 'ecv-views', '_ekkoECVL10n', array(
+			wp_localize_script( 'ekko-cloud-video', '_ekkoECVL10n', array(
 				'setBanner'         => __( 'Set banner image', \Ekko\TEXT_DOMAIN ),
 				'setBannerTitle'    => __( 'Set Banner Image', \Ekko\TEXT_DOMAIN ),
 				'addMediaTitle'     => __( 'Add Media', \Ekko\TEXT_DOMAIN ),
@@ -93,7 +91,7 @@
 		}
 
 		final public function media_templates() {
-			include( \Ekko\PLUGIN_DIR . 'templates/media-template.php' );
+			include( \Ekko\PLUGIN_DIR . 'templates/ecv-template.php' );
 		}
 
 		final public function query_videos() {

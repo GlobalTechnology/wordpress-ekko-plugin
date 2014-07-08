@@ -106,7 +106,7 @@
 
 				<div class="navbar-form pull-right">
 					<div class="btn-group">
-						<a class="btn btn-success dropdown-toggle" data-toggle="dropdown" href><i class="icon-film icon-white"></i> <?php esc_html_e( 'Add Media', \Ekko\TEXT_DOMAIN ); ?> <span class="caret"></a>
+						<a class="btn btn-success dropdown-toggle" ng-class="{'disabled':(item.media.assets.length >= 5)}" data-toggle="dropdown" href><i class="icon-film icon-white"></i> <?php esc_html_e( 'Add Media', \Ekko\TEXT_DOMAIN ); ?> <span class="caret"></a>
 						<ul class="dropdown-menu">
 							<li><a tabindex="-1" href ng-click="addMedia('image')"><i class="icon-picture"></i> <?php esc_html_e( 'Image', \Ekko\TEXT_DOMAIN ); ?></a></li>
 							<li><a tabindex="-1" href ng-click="addMedia('video')"><i class="icon-film"></i> <?php esc_html_e( 'Video', \Ekko\TEXT_DOMAIN ); ?></a></li>

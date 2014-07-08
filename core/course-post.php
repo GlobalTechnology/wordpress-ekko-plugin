@@ -331,6 +331,9 @@
 						if ( $resource_item->provider )
 							$resource->setAttribute( 'provider', $resource_item->provider );
 						break;
+					case 'arclight':
+						$resource->setAttribute( 'refId', $resource_item->refId );
+						break;
 				}
 			}
 			$this->resources = $this->resource_map;
@@ -355,6 +358,9 @@
 					break;
 				case 'uri':
 					$item->key = $item->uri;
+					break;
+				case 'arclight':
+					$item->key = "arclight:{$item->refId}";
 					break;
 			}
 			foreach ( $this->resource_map as $resource ) {
