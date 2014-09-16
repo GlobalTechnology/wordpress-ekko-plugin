@@ -16,7 +16,7 @@
 			$course_post_type = \Ekko\Core\CoursePostType::singleton()->post_type();
 
 			// Students Column on Courses post type
-			add_filter( "manage_{$course_post_type}_posts_columns", array( &$this, 'manage_posts_columns' ), 10, 1 );
+			add_filter( "manage_{$course_post_type}_posts_columns", array( &$this, 'manage_posts_columns' ), 9, 1 );
 			add_action( "manage_{$course_post_type}_posts_custom_column", array( &$this, 'manage_posts_custom_column' ), 10, 2 );
 
 			add_action( 'admin_enqueue_scripts', array( &$this, 'enqueue_scripts' ), 10, 1 );

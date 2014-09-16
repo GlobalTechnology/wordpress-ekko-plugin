@@ -48,7 +48,7 @@
 
 		function user_role_changed( $user_id, $role ) {
 			//Fetch users GUID and bail if GUEST
-			$CAS = ( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
+			$CAS  = ( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
 				\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton() : \WPGCXPlugin::singleton();
 			$guid = $CAS->get_user_guid( $user_id );
 			if ( $guid == 'GUEST' )
@@ -76,7 +76,7 @@
 
 		function user_removed_from_blog( $user_id, $blog_id ) {
 			//Fetch users GUID and bail if GUEST
-			$CAS = ( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
+			$CAS  = ( class_exists( '\\GlobalTechnology\\CentralAuthenticationService\\CASLogin' ) ) ?
 				\GlobalTechnology\CentralAuthenticationService\CASLogin::singleton() : \WPGCXPlugin::singleton();
 			$guid = $CAS->get_user_guid( $user_id );
 			if ( $guid == 'GUEST' )

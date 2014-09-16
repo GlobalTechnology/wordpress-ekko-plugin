@@ -25,6 +25,12 @@
 	const XMLNS_HUB = 'https://ekkoproject.org/hub';
 
 	/**
+	 * App Link Base URL
+	 * @var string
+	 */
+	const APP_LINK_URL = 'https://wpdev.gcx.org/brian-lms1/course';
+
+	/**
 	 * Plugin URL
 	 * @name PLUGIN_URL
 	 * @var string

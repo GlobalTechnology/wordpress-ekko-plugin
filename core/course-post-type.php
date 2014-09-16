@@ -160,6 +160,10 @@
 					$columns[ 'lessons' ] = __( 'Lessons', \Ekko\TEXT_DOMAIN );
 					$columns[ 'quizzes' ] = __( 'Quizzes', \Ekko\TEXT_DOMAIN );
 				}
+				elseif ( $name == 'date' ) {
+					$columns[ 'deepLink' ] = __( 'App Link', \Ekko\TEXT_DOMAIN );
+					$columns[ $name ]      = $value;
+				}
 				else
 					$columns[ $name ] = $value;
 			}
@@ -187,6 +191,12 @@
 						$count ++;
 				}
 				echo $count;
+			}
+			elseif ( $column_name == 'deepLink' ) {
+				if ( $course->course_ID !== false ) {
+					echo sprintf( '<a href="%1$s">%2$s</a>',
+						\Ekko\APP_LINK_URL . "/{$course->course_ID}", esc_html( $course->post_title ) );
+				}
 			}
 		}
 
