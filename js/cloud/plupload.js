@@ -20,6 +20,7 @@ window.wp = window.wp || {};
 	 */
 	ECVUploader = function ( options ) {
 		var self = this,
+			isIE = navigator.userAgent.indexOf('Trident/') != -1 || navigator.userAgent.indexOf('MSIE ') != -1,
 			elements = {
 				container: 'container',
 				browser:   'browse_button',
@@ -79,6 +80,14 @@ window.wp = window.wp || {};
 			return;
 		}
 
+		// Make sure flash sends cookies (seems in IE it does without switching to urlstream mode)
+		if ( ! isIE && 'flash' === plupload.predictRuntime( this.plupload ) &&
+			( ! this.plupload.required_features || ! this.plupload.required_features.hasOwnProperty( 'send_binary_string' ) ) ) {
+
+			this.plupload.required_features = this.plupload.required_features || {};
+			this.plupload.required_features.send_binary_string = true;
+		}
+
 		this.uploader = new plupload.Uploader( this.plupload );
 		delete this.plupload;
 
@@ -100,27 +109,26 @@ window.wp = window.wp || {};
 			self.error( message, data, file );
 		};
 
-		this.uploader.init();
+		this.uploader.bind( 'init', function( uploader ) {
+			var timer, active, dragdrop,
+				dropzone = self.dropzone;
 
-		this.supports.dragdrop = this.uploader.features.dragdrop && !ECVUploader.browser.mobile;
+			dragdrop = self.supports.dragdrop = uploader.features.dragdrop && ! ECVUploader.browser.mobile;
 
-		// Generate drag/drop helper classes.
-		(function ( dropzone, supported ) {
-			var timer, active;
-
-			if ( !dropzone ) {
+			// Generate drag/drop helper classes.
+			if ( ! dropzone ) {
 				return;
 			}
 
-			dropzone.toggleClass( 'supports-drag-drop', !!supported );
+			dropzone.toggleClass( 'supports-drag-drop', !! dragdrop );
 
-			if ( !supported ) {
-				return dropzone.unbind( '.wp-uploader' );
+			if ( ! dragdrop ) {
+				return dropzone.unbind('.wp-uploader');
 			}
 
 			// 'dragenter' doesn't fire correctly,
 			// simulate it with a limited 'dragover'
-			dropzone.bind( 'dragover.wp-uploader', function () {
+			dropzone.bind( 'dragover.wp-uploader', function() {
 				if ( timer ) {
 					clearTimeout( timer );
 				}
@@ -129,22 +137,26 @@ window.wp = window.wp || {};
 					return;
 				}
 
-				dropzone.trigger( 'dropzone:enter' ).addClass( 'drag-over' );
+				dropzone.trigger('dropzone:enter').addClass('drag-over');
 				active = true;
-			} );
+			});
 
-			dropzone.bind( 'dragleave.wp-uploader, drop.wp-uploader', function () {
+			dropzone.bind('dragleave.wp-uploader, drop.wp-uploader', function() {
 				// Using an instant timer prevents the drag-over class from
 				// being quickly removed and re-added when elements inside the
 				// dropzone are repositioned.
 				//
 				// See http://core.trac.wordpress.org/ticket/21705
-				timer = setTimeout( function () {
+				timer = setTimeout( function() {
 					active = false;
-					dropzone.trigger( 'dropzone:leave' ).removeClass( 'drag-over' );
+					dropzone.trigger('dropzone:leave').removeClass('drag-over');
 				}, 0 );
-			} );
-		}( this.dropzone, this.supports.dragdrop ));
+			});
+
+			$(self).trigger( 'uploader:ready' );
+		});
+
+		this.uploader.init();
 
 		if ( this.browser ) {
 			this.browser.on( 'mouseenter', this.refresh );

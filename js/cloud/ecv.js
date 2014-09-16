@@ -1055,14 +1055,21 @@ window.ekko = window.ekko || {};
 				AttachmentView: ekko.view.Video
 			} );
 
+			this.toolbar = new wp.media.view.Toolbar({
+				controller: this.controller
+			});
+			this.toolbar.set( 'spinner', new wp.media.view.Spinner({
+				priority: -70
+			}) );
+
+			this.createUploader();
+			this.createAttachments();
 			this.updateContent();
 
 			this.collection.on( 'add remove reset', this.updateContent, this );
 		},
 
 		createUploader: function () {
-			this.removeContent();
-
 			this.uploader = new ekko.view.ECVUploaderInline( {
 				controller: this.controller,
 				status:     false,
@@ -1071,7 +1078,6 @@ window.ekko = window.ekko || {};
 
 			this.views.add( this.uploader );
 		}
-
 	} );
 
 	/**
@@ -1085,21 +1091,27 @@ window.ekko = window.ekko || {};
 			check: true
 		},
 		initialize: function () {
-			var selection = this.options.selection;
+			var selection = this.options.selection,
+				options = _.defaults( this.options, {
+					rerenderOnModelChange: true
+				} );
 
-			this.model.on( 'change:sizes change:uploading change:state', this.render, this );
-			this.model.on( 'change:percent', this.progress, this );
+			if ( options.rerenderOnModelChange ) {
+				this.model.on( 'change', this.render, this );
+			} else {
+				this.model.on( 'change:percent', this.progress, this );
+			}
 
 			// Update the selection.
 			this.model.on( 'add', this.select, this );
 			this.model.on( 'remove', this.deselect, this );
 			if ( selection ) {
 				selection.on( 'reset', this.updateSelect, this );
-			}
 
-			// Update the model's details view.
-			this.model.on( 'selection:single selection:unsingle', this.details, this );
-			this.details( this.model, this.controller.state().get( 'selection' ) );
+				// Update the model's details view.
+				this.model.on( 'selection:single selection:unsingle', this.details, this );
+				this.details( this.model, this.controller.state().get( 'selection' ) );
+			}
 		}
 	} );
 
@@ -1139,7 +1151,7 @@ window.ekko = window.ekko || {};
 			}, editor );
 
 			editor.on( 'arclight-insert', function () {
-				var media = this.get('arclight' ).get('selection' ).single();
+				var media = this.get( 'arclight' ).get( 'selection' ).single();
 				this.trigger( 'add-media', {
 					mediaType:  'arclight',
 					attributes: media.attributes

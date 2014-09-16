@@ -32,7 +32,7 @@
 </script>
 
 <script type="text/html" id="tmpl-video">
-	<div class="attachment-preview type-ecv-video {{ data.orientation }}">
+	<div class="attachment-preview js--select-attachment type-ecv-video {{ data.orientation }}">
 		<# if ( data.uploading ) { #>
 			<div class="media-progress-bar">
 				<div></div>

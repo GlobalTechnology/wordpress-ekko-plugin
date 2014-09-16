@@ -1,7 +1,7 @@
 <?php
 ?>
 <script type="text/html" id="tmpl-arclight-video">
-	<div class="attachment-preview portrait">
+	<div class="attachment-preview js--select-attachment portrait">
 		<div class="thumbnail">
 			<div class="centered">
 				<img src="{{ data.media_thumbnail }}" draggable="false" />
